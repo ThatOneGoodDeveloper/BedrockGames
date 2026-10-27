@@ -554,3 +554,15 @@ export function initGame({ slug, name, createGame, tagline = '', controlsHint = 
 
   return { api, startGame, restartGame, setPaused, game };
 }
+
+if (/[?&]embed=1/.test(location.search)) {
+  document.documentElement.classList.add('embed');
+  let tries = 0;
+  const timer = setInterval(() => {
+    const overlay = document.getElementById('gameOverlay');
+    const btn = document.getElementById('overlayBtn');
+    if (overlay && btn && overlay.classList.contains('is-visible') && overlay.dataset.tone === 'start') btn.click();
+    else if (overlay && !overlay.classList.contains('is-visible')) clearInterval(timer);
+    if (++tries > 40) clearInterval(timer);
+  }, 150);
+}

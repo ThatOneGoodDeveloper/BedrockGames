@@ -281,8 +281,8 @@
         deferredInstall = null;
         return;
       }
-      if (location.pathname !== '/install.html') {
-        location.href = '/install.html';
+      if (!location.pathname.endsWith('/install.html')) {
+        location.href = '../../';
       } else {
         $('.install-hero')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }

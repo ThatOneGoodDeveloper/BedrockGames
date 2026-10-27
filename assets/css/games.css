@@ -89,13 +89,13 @@
 }
 .game-btn:active { transform: translateY(0); }
 .game-btn:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
-.btn-restart { background-image: url('/assets/img/icons/rewind.png'); }
-.btn-pause { background-image: url('/assets/img/icons/pause.png'); }
-.btn-pause.is-paused { background-image: url('/assets/img/icons/next.png'); }
-.btn-sound { background-image: url('/assets/img/icons/audioOn.png'); }
-.btn-sound.is-muted { background-image: url('/assets/img/icons/audioOff.png'); }
-.btn-fullscreen { background-image: url('/assets/img/icons/larger.png'); }
-.btn-share { background-image: url('/assets/img/icons/share1.png'); }
+.btn-restart { background-image: url('../img/icons/rewind.png'); }
+.btn-pause { background-image: url('../img/icons/pause.png'); }
+.btn-pause.is-paused { background-image: url('../img/icons/next.png'); }
+.btn-sound { background-image: url('../img/icons/audioOn.png'); }
+.btn-sound.is-muted { background-image: url('../img/icons/audioOff.png'); }
+.btn-fullscreen { background-image: url('../img/icons/larger.png'); }
+.btn-share { background-image: url('../img/icons/share1.png'); }
 .game-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .game-btn[aria-pressed="true"] { color: #d9f99d; border-color: rgba(163, 230, 53, 0.4); }
 
@@ -1032,3 +1032,11 @@
   .external-cover h2 { font-size: 1.05rem; }
   .external-cover .btn { min-height: 38px; }
 }
+
+/* Embed mode: game only, no site chrome (used by the in-site player) */
+html.embed .site-header, html.embed .breadcrumbs, html.embed .game-head, html.embed .game-aside,
+html.embed .game-article, html.embed .more-games, html.embed .site-footer, html.embed .game-status,
+html.embed .skip-link, html.embed #btnFullscreen, html.embed #shareGame { display: none !important; }
+html.embed body, html.embed main, html.embed .game-layout, html.embed .game-main { margin: 0; padding: 0; max-width: none; display: block; }
+html.embed .game-shell { position: fixed; inset: 0; margin: 0; border-radius: 0; display: flex; flex-direction: column; max-width: none; width: 100%; height: 100%; }
+html.embed .game-stage { flex: 1 1 auto; min-height: 0; height: auto !important; aspect-ratio: auto !important; max-height: none !important; }

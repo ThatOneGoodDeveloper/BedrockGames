@@ -283,7 +283,7 @@ p { margin: 0 0 1rem; }
     linear-gradient(90deg, rgba(7, 11, 20, 0.97) 0%, rgba(7, 11, 20, 0.9) 40%, rgba(7, 11, 20, 0.5) 72%, rgba(7, 11, 20, 0.32) 100%),
     radial-gradient(720px 340px at 15% 10%, rgba(139, 92, 246, 0.3), transparent 62%),
     radial-gradient(620px 320px at 88% 20%, rgba(34, 211, 238, 0.16), transparent 60%),
-    url('/assets/img/hero-arcade.jpg') center right / cover no-repeat,
+    url('../img/hero-arcade.jpg') center right / cover no-repeat,
     linear-gradient(160deg, #101a33 0%, #0a1020 70%);
   box-shadow: var(--shadow);
 }
@@ -901,7 +901,7 @@ kbd {
     background:
       linear-gradient(180deg, rgba(7, 11, 20, 0.94) 0%, rgba(7, 11, 20, 0.72) 55%, rgba(7, 11, 20, 0.9) 100%),
       radial-gradient(500px 280px at 50% 0%, rgba(139, 92, 246, 0.24), transparent 65%),
-      url('/assets/img/hero-arcade.jpg') center / cover no-repeat,
+      url('../img/hero-arcade.jpg') center / cover no-repeat,
       linear-gradient(160deg, #101a33 0%, #0a1020 70%);
   }
   .hero-stats { gap: 1rem 1.6rem; }

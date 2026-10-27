@@ -64,7 +64,7 @@
     if (typeof GAME_SOURCES !== 'undefined' && GAME_SOURCES[game.id]) {
       return GAME_SOURCES[game.id];
     }
-    return game.path;
+    return game.path + '?embed=1';
   }
 
   // ─── Toast ───
