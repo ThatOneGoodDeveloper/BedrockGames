@@ -60,6 +60,13 @@
 
   function getGameById(id) { return GAMES.find(g => g.id === id); }
 
+  function getGameUrl(game) {
+    if (typeof GAME_SOURCES !== 'undefined' && GAME_SOURCES[game.id]) {
+      return GAME_SOURCES[game.id];
+    }
+    return game.path;
+  }
+
   // ─── Toast ───
   let toastTimer;
   function showToast(msg) {
@@ -138,7 +145,7 @@
     }
   });
 
-  // ─── Game Player (fullscreen overlay) ───
+  // ─── Game Player (fullscreen) ───
   const gamePlayer = $('#gamePlayer');
   const gamePlayerFrame = $('#gamePlayerFrame');
   const gamePlayerTitle = $('#gamePlayerTitle');
@@ -148,11 +155,14 @@
   function openGame(game) {
     currentGameId = game.id;
     gamePlayerTitle.textContent = game.title;
-    gamePlayerFrame.src = game.path;
+    gamePlayerFrame.src = getGameUrl(game);
     gamePlayer.classList.add('open');
     document.body.style.overflow = 'hidden';
     addToRecent(game.id);
     updateFavBtn();
+
+    // Auto-enter fullscreen
+    gamePlayer.requestFullscreen().catch(() => {});
   }
 
   function closeGame() {
@@ -160,6 +170,9 @@
     gamePlayerFrame.src = '';
     document.body.style.overflow = '';
     currentGameId = null;
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
   }
 
   function updateFavBtn() {
@@ -188,13 +201,23 @@
   $('#gamePlayerNewTab').addEventListener('click', () => {
     if (currentGameId) {
       const game = getGameById(currentGameId);
-      if (game) window.open(game.path, '_blank');
+      if (game) window.open(getGameUrl(game), '_blank');
     }
   });
 
   document.addEventListener('keydown', e => {
     if (!gamePlayer.classList.contains('open')) return;
-    if (e.key === 'Escape') { e.preventDefault(); closeGame(); }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeGame();
+    }
+  });
+
+  // Exit fullscreen should also close the player
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && gamePlayer.classList.contains('open')) {
+      closeGame();
+    }
   });
 
   // ─── Render games ───
@@ -206,7 +229,7 @@
   let currentFiltered = [];
   let visibleCount = 0;
 
-  function makeCard(game, opts) {
+  function makeCard(game) {
     const card = document.createElement('div');
     card.className = 'game-card';
     card.dataset.title = game.title;
