@@ -99,7 +99,33 @@
   // ─── Render games ───
   const grid = $('#gamesGrid');
   const gameCountEl = $('#gameCount');
+  const subtitleEl = $('#gamesSubtitle');
   let activeCategory = 'all';
+  const PAGE_SIZE = 60;
+  let currentFiltered = [];
+  let visibleCount = 0;
+
+  function makeCard(game) {
+    const card = document.createElement('a');
+    card.href = game.path;
+    card.className = 'game-card';
+    card.dataset.title = game.title;
+    card.dataset.id = game.id;
+    card.innerHTML = `
+      <div class="game-card__image">
+        ${game.emoji}
+        <div class="game-card__play">
+          <div class="game-card__play-btn">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="game-card__body">
+        <div class="game-card__title">${game.title}</div>
+        <div class="game-card__category">${game.category}</div>
+      </div>`;
+    return card;
+  }
 
   function renderGames(filter, search) {
     grid.innerHTML = '';
@@ -110,6 +136,9 @@
       filtered = filtered.filter(g => g.title.toLowerCase().includes(q));
     }
 
+    currentFiltered = filtered;
+    subtitleEl.textContent = filtered.length + ' game' + (filtered.length !== 1 ? 's' : '') + (filter !== 'all' ? ' in ' + filter : '');
+
     if (filtered.length === 0) {
       grid.innerHTML = `
         <div class="empty-state">
@@ -117,30 +146,54 @@
           <h3 class="empty-state__title">No games found</h3>
           <p class="empty-state__text">Try a different search or category.</p>
         </div>`;
+      removeLoadMore();
       return;
     }
 
-    filtered.forEach(game => {
-      const card = document.createElement('a');
-      card.href = game.path;
-      card.className = 'game-card';
-      card.dataset.title = game.title;
-      card.dataset.id = game.id;
-      card.innerHTML = `
-        <div class="game-card__image">
-          ${game.emoji}
-          <div class="game-card__play">
-            <div class="game-card__play-btn">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            </div>
-          </div>
-        </div>
-        <div class="game-card__body">
-          <div class="game-card__title">${game.title}</div>
-          <div class="game-card__category">${game.category}</div>
-        </div>`;
-      grid.appendChild(card);
-    });
+    visibleCount = Math.min(PAGE_SIZE, filtered.length);
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < visibleCount; i++) frag.appendChild(makeCard(filtered[i]));
+    grid.appendChild(frag);
+
+    if (visibleCount < filtered.length) showLoadMore();
+    else removeLoadMore();
+  }
+
+  function showMore() {
+    const start = visibleCount;
+    const end = Math.min(visibleCount + PAGE_SIZE, currentFiltered.length);
+    const frag = document.createDocumentFragment();
+    for (let i = start; i < end; i++) frag.appendChild(makeCard(currentFiltered[i]));
+    grid.appendChild(frag);
+    visibleCount = end;
+    if (visibleCount >= currentFiltered.length) removeLoadMore();
+    else updateLoadMoreText();
+  }
+
+  function showLoadMore() {
+    let btn = $('#loadMoreBtn');
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.id = 'loadMoreBtn';
+      btn.className = 'btn btn--primary btn--load-more';
+      btn.addEventListener('click', showMore);
+      grid.parentElement.appendChild(btn);
+    }
+    updateLoadMoreText();
+    btn.style.display = '';
+  }
+
+  function updateLoadMoreText() {
+    const btn = $('#loadMoreBtn');
+    if (btn) {
+      const remaining = currentFiltered.length - visibleCount;
+      btn.textContent = 'Load More (' + remaining + ' remaining)';
+    }
+  }
+
+  function removeLoadMore() {
+    const btn = $('#loadMoreBtn');
+    if (btn) btn.style.display = 'none';
   }
 
   gameCountEl.textContent = GAMES.length;
