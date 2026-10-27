@@ -35,6 +35,47 @@
     panicUrl: load('panicUrl', 'https://classroom.google.com'),
   };
 
+  // ─── Favorites & History ───
+  let favorites = load('favorites', []);
+  let recentlyPlayed = load('recent', []);
+
+  function isFavorite(id) { return favorites.includes(id); }
+
+  function toggleFavorite(id) {
+    const i = favorites.indexOf(id);
+    if (i >= 0) favorites.splice(i, 1);
+    else favorites.unshift(id);
+    save('favorites', favorites);
+    renderFavorites();
+    return i < 0;
+  }
+
+  function addToRecent(id) {
+    recentlyPlayed = recentlyPlayed.filter(r => r !== id);
+    recentlyPlayed.unshift(id);
+    if (recentlyPlayed.length > 20) recentlyPlayed = recentlyPlayed.slice(0, 20);
+    save('recent', recentlyPlayed);
+    renderRecent();
+  }
+
+  function getGameById(id) { return GAMES.find(g => g.id === id); }
+
+  // ─── Toast ───
+  let toastTimer;
+  function showToast(msg) {
+    let el = $('#toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'toast';
+      el.className = 'toast';
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
+  }
+
   // ─── Theme ───
   function resolveTheme(pref) {
     if (pref === 'light' || pref === 'dark') return pref;
@@ -91,9 +132,69 @@
   // ─── Panic key ───
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    if ($('#gamePlayer').classList.contains('open')) return;
     if (e.key === settings.panicKey) {
       window.location.replace(settings.panicUrl || 'https://classroom.google.com');
     }
+  });
+
+  // ─── Game Player (fullscreen overlay) ───
+  const gamePlayer = $('#gamePlayer');
+  const gamePlayerFrame = $('#gamePlayerFrame');
+  const gamePlayerTitle = $('#gamePlayerTitle');
+  const gamePlayerFav = $('#gamePlayerFav');
+  let currentGameId = null;
+
+  function openGame(game) {
+    currentGameId = game.id;
+    gamePlayerTitle.textContent = game.title;
+    gamePlayerFrame.src = game.path;
+    gamePlayer.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    addToRecent(game.id);
+    updateFavBtn();
+  }
+
+  function closeGame() {
+    gamePlayer.classList.remove('open');
+    gamePlayerFrame.src = '';
+    document.body.style.overflow = '';
+    currentGameId = null;
+  }
+
+  function updateFavBtn() {
+    if (!currentGameId) return;
+    const active = isFavorite(currentGameId);
+    gamePlayerFav.classList.toggle('fav-active', active);
+  }
+
+  $('#gamePlayerBack').addEventListener('click', closeGame);
+
+  gamePlayerFav.addEventListener('click', () => {
+    if (!currentGameId) return;
+    const added = toggleFavorite(currentGameId);
+    updateFavBtn();
+    showToast(added ? 'Added to favorites' : 'Removed from favorites');
+  });
+
+  $('#gamePlayerFullscreen').addEventListener('click', () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      gamePlayer.requestFullscreen().catch(() => {});
+    }
+  });
+
+  $('#gamePlayerNewTab').addEventListener('click', () => {
+    if (currentGameId) {
+      const game = getGameById(currentGameId);
+      if (game) window.open(game.path, '_blank');
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (!gamePlayer.classList.contains('open')) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeGame(); }
   });
 
   // ─── Render games ───
@@ -105,15 +206,20 @@
   let currentFiltered = [];
   let visibleCount = 0;
 
-  function makeCard(game) {
-    const card = document.createElement('a');
-    card.href = game.path;
+  function makeCard(game, opts) {
+    const card = document.createElement('div');
     card.className = 'game-card';
     card.dataset.title = game.title;
     card.dataset.id = game.id;
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+
+    const favBadge = isFavorite(game.id) ? '<span class="game-card__fav-badge">&#9829;</span>' : '';
+
     const imgPart = game.img
-      ? `<img class="game-card__thumb" src="${game.img}" alt="${game.title}" loading="lazy"><span class="game-card__emoji-badge">${game.emoji}</span>`
-      : game.emoji;
+      ? `<img class="game-card__thumb" src="${game.img}" alt="${game.title}" loading="lazy"><span class="game-card__emoji-badge">${game.emoji}</span>${favBadge}`
+      : `${game.emoji}${favBadge}`;
+
     card.innerHTML = `
       <div class="game-card__image${game.img ? ' game-card__image--has-thumb' : ''}">
         ${imgPart}
@@ -127,6 +233,9 @@
         <div class="game-card__title">${game.title}</div>
         <div class="game-card__category">${game.category}</div>
       </div>`;
+
+    card.addEventListener('click', () => openGame(game));
+    card.addEventListener('keydown', e => { if (e.key === 'Enter') openGame(game); });
     return card;
   }
 
@@ -199,8 +308,49 @@
     if (btn) btn.style.display = 'none';
   }
 
+  // ─── Category counts ───
+  function renderCategoryCounts() {
+    const counts = {};
+    GAMES.forEach(g => { counts[g.category] = (counts[g.category] || 0) + 1; });
+    const countAll = $('#countAll');
+    if (countAll) countAll.textContent = GAMES.length;
+    ['puzzle','arcade','action','racing','adventure','multiplayer','shooting','simulation','platform','sports'].forEach(cat => {
+      const el = $('#count' + cat.charAt(0).toUpperCase() + cat.slice(1));
+      if (el) el.textContent = counts[cat] || 0;
+    });
+  }
+
   gameCountEl.textContent = GAMES.length;
+  renderCategoryCounts();
   renderGames('all', '');
+
+  // ─── Recently Played ───
+  function renderRecent() {
+    const section = $('#recentSection');
+    const container = $('#recentGrid');
+    const games = recentlyPlayed.map(getGameById).filter(Boolean).slice(0, 10);
+    if (games.length === 0) { section.style.display = 'none'; return; }
+    section.style.display = '';
+    container.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    games.forEach(g => frag.appendChild(makeCard(g)));
+    container.appendChild(frag);
+  }
+  renderRecent();
+
+  // ─── Favorites ───
+  function renderFavorites() {
+    const section = $('#favSection');
+    const container = $('#favGrid');
+    const games = favorites.map(getGameById).filter(Boolean);
+    if (games.length === 0) { section.style.display = 'none'; return; }
+    section.style.display = '';
+    container.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    games.forEach(g => frag.appendChild(makeCard(g)));
+    container.appendChild(frag);
+  }
+  renderFavorites();
 
   // ─── Category filter ───
   const categoryBar = $('#categoryBar');
@@ -210,7 +360,8 @@
     $$('.category', categoryBar).forEach(b => b.classList.remove('category--active'));
     btn.classList.add('category--active');
     activeCategory = btn.dataset.category;
-    renderGames(activeCategory, $('#searchInput').value);
+    const searchVal = $('#searchInput').value || ($('#mobileSearchInput') ? $('#mobileSearchInput').value : '');
+    renderGames(activeCategory, searchVal);
   });
 
   $$('[data-cat-link]').forEach(link => {
@@ -226,10 +377,41 @@
     });
   });
 
-  // ─── Search ───
+  // ─── Search (desktop) ───
   const searchInput = $('#searchInput');
   searchInput.addEventListener('input', () => {
     renderGames(activeCategory, searchInput.value);
+    const mobileInput = $('#mobileSearchInput');
+    if (mobileInput && mobileInput.value !== searchInput.value) mobileInput.value = searchInput.value;
+  });
+
+  // ─── Mobile search ───
+  const mobileSearchBtn = $('#mobileSearchBtn');
+  const mobileSearchBar = $('#mobileSearchBar');
+  const mobileSearchInput = $('#mobileSearchInput');
+  const mobileSearchClose = $('#mobileSearchClose');
+
+  mobileSearchBtn.addEventListener('click', () => {
+    mobileSearchBar.classList.add('open');
+    mobileSearchInput.focus();
+  });
+
+  mobileSearchClose.addEventListener('click', () => {
+    mobileSearchBar.classList.remove('open');
+    mobileSearchInput.value = '';
+    searchInput.value = '';
+    renderGames(activeCategory, '');
+  });
+
+  mobileSearchInput.addEventListener('input', () => {
+    renderGames(activeCategory, mobileSearchInput.value);
+    searchInput.value = mobileSearchInput.value;
+  });
+
+  // ─── Random game ───
+  $('#randomGameBtn').addEventListener('click', () => {
+    const game = GAMES[Math.floor(Math.random() * GAMES.length)];
+    if (game) openGame(game);
   });
 
   // ─── Settings modal ───
@@ -238,8 +420,8 @@
   const heroSettingsBtn = $('#heroSettingsBtn');
   const settingsClose = $('#settingsClose');
 
-  function openSettings() { settingsOverlay.classList.add('open'); syncSettingsUI(); }
-  function closeSettings() { settingsOverlay.classList.remove('open'); }
+  function openSettings() { settingsOverlay.classList.add('open'); document.body.style.overflow = 'hidden'; syncSettingsUI(); }
+  function closeSettings() { settingsOverlay.classList.remove('open'); document.body.style.overflow = ''; }
 
   settingsBtn.addEventListener('click', openSettings);
   heroSettingsBtn.addEventListener('click', openSettings);
@@ -310,6 +492,24 @@
 
   $('#launchBlank').addEventListener('click', openInBlank);
 
+  // ─── Clear favorites & history ───
+  $('#clearFavorites').addEventListener('click', () => {
+    if (!confirm('Clear all favorites?')) return;
+    favorites = [];
+    save('favorites', favorites);
+    renderFavorites();
+    renderGames(activeCategory, searchInput.value);
+    showToast('Favorites cleared');
+  });
+
+  $('#clearHistory').addEventListener('click', () => {
+    if (!confirm('Clear recently played?')) return;
+    recentlyPlayed = [];
+    save('recent', recentlyPlayed);
+    renderRecent();
+    showToast('History cleared');
+  });
+
   $('#resetSettings').addEventListener('click', () => {
     if (!confirm('Reset all settings to defaults?')) return;
     try {
@@ -317,9 +517,15 @@
     } catch {}
     sessionStorage.removeItem('bg-cloaked');
     settings = { theme: 'system', cloak: false, tabTitle: '', tabIcon: '', panicKey: '`', panicUrl: 'https://classroom.google.com' };
+    favorites = [];
+    recentlyPlayed = [];
     applyTheme();
     applyTabCloak();
     syncSettingsUI();
+    renderFavorites();
+    renderRecent();
+    renderGames('all', '');
+    showToast('Settings reset');
   });
 
   // ─── Home link ───
@@ -328,17 +534,26 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
-  // ─── Smooth nav on scroll ───
+  // ─── Nav scroll effect ───
   const nav = $('.nav');
+  const backToTop = $('#backToTop');
   let ticking = false;
+
   window.addEventListener('scroll', () => {
     if (!ticking) {
       requestAnimationFrame(() => {
-        nav.style.borderBottomColor = window.scrollY > 20 ? 'var(--border)' : 'transparent';
+        const scrolled = window.scrollY > 20;
+        nav.classList.toggle('nav--scrolled', scrolled);
+        backToTop.classList.toggle('visible', window.scrollY > 400);
         ticking = false;
       });
       ticking = true;
     }
+  });
+
+  // ─── Back to top ───
+  backToTop.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
   // ─── Scroll animations ───
