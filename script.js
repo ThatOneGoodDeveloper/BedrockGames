@@ -111,9 +111,12 @@
     card.className = 'game-card';
     card.dataset.title = game.title;
     card.dataset.id = game.id;
+    const imgPart = game.img
+      ? `<img class="game-card__thumb" src="${game.img}" alt="${game.title}" loading="lazy"><span class="game-card__emoji-badge">${game.emoji}</span>`
+      : game.emoji;
     card.innerHTML = `
-      <div class="game-card__image">
-        ${game.emoji}
+      <div class="game-card__image${game.img ? ' game-card__image--has-thumb' : ''}">
+        ${imgPart}
         <div class="game-card__play">
           <div class="game-card__play-btn">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>

@@ -231,7 +231,7 @@ input, select { font: inherit; }
 .game-card {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: var(--radius-lg); overflow: hidden; transition: var(--transition); cursor: pointer;
-  position: relative;
+  position: relative; text-decoration: none; color: inherit; display: block;
 }
 .game-card:hover { transform: translateY(-6px); border-color: var(--accent); box-shadow: var(--shadow-md), 0 0 30px var(--accent-glow); }
 .game-card__image {
@@ -239,6 +239,13 @@ input, select { font: inherit; }
   display: flex; align-items: center; justify-content: center; font-size: 3.5rem;
   position: relative; overflow: hidden;
 }
+.game-card__thumb { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.game-card__emoji-badge {
+  position: absolute; top: 8px; left: 8px; z-index: 1;
+  font-size: 1.4rem; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+  border-radius: 8px; padding: 4px 8px; line-height: 1;
+}
+.game-card__image--has-thumb { font-size: inherit; }
 .game-card__image::after {
   content: ''; position: absolute; inset: 0;
   background: linear-gradient(to top, var(--bg-card) 0%, transparent 50%);
