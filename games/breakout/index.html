@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Breakout — Bedrock Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#f0f0f5;font-family:'Inter',system-ui,sans-serif;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#111119;border-bottom:1px solid #1f1f2e}
+.back{color:#f0f0f5;text-decoration:none;font-weight:600}.back:hover{color:#9a80ff}
+.info{display:flex;gap:20px;font-weight:700;color:#9a80ff}
+.wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:16px}
+canvas{border-radius:12px;border:1px solid #1f1f2e;cursor:none}
+.overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,10,15,.85);z-index:10}
+.overlay.hidden{display:none}
+.box{background:#16161f;border:1px solid #1f1f2e;border-radius:16px;padding:40px;text-align:center;max-width:340px;width:90%}
+.box h2{font-size:1.5rem;margin-bottom:8px}.box p{color:#9090a8;margin-bottom:24px}
+.btn{padding:12px 32px;background:linear-gradient(135deg,#7c5cff,#5a3dd6);color:#fff;border:none;border-radius:999px;font-weight:600;cursor:pointer}
+.btn:hover{transform:translateY(-2px)}
+</style>
+</head>
+<body>
+<div class="top"><a class="back" href="../../">&#8592; Back</a><div class="info"><span>Score: <span id="sc">0</span></span><span>Lives: <span id="lv">3</span></span></div></div>
+<div class="wrap"><canvas id="c"></canvas></div>
+<div class="overlay" id="start"><div class="box"><h2>🧱 Breakout</h2><p>Move the paddle with your mouse or touch. Break all the bricks!</p><button class="btn" id="playBtn">Play</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h2 id="et">Game Over</h2><p>Score: <span id="fs">0</span></p><button class="btn" id="retry">Play Again</button></div></div>
+<script>
+const c=document.getElementById('c'),ctx=c.getContext('2d');
+const W=480,H=600;c.width=W;c.height=H;
+const ROWS=6,COLS=8,BW=W/COLS-4,BH=22,PAD_W=80,PAD_H=14,BALL_R=7;
+const BCOLORS=['#f87171','#f97316','#fbbf24','#34d399','#3b82f6','#9a80ff'];
+let bricks,ball,pad,score,lives,running;
+
+function init(){
+  bricks=[];for(let r=0;r<ROWS;r++)for(let cl=0;cl<COLS;cl++)bricks.push({x:cl*(BW+4)+2,y:r*(BH+4)+40,w:BW,h:BH,color:BCOLORS[r],alive:true});
+  pad={x:W/2-PAD_W/2,y:H-40,w:PAD_W,h:PAD_H};
+  ball={x:W/2,y:H-60,vx:3.5,vy:-3.5};score=0;lives=3;running=true;
+  document.getElementById('sc').textContent=0;document.getElementById('lv').textContent=3;
+  requestAnimationFrame(loop);
+}
+function loop(){
+  if(!running)return;
+  ball.x+=ball.vx;ball.y+=ball.vy;
+  if(ball.x-BALL_R<0||ball.x+BALL_R>W)ball.vx*=-1;
+  if(ball.y-BALL_R<0)ball.vy*=-1;
+  if(ball.y+BALL_R>H){lives--;document.getElementById('lv').textContent=lives;if(lives<=0){end('Game Over');return;}ball.x=W/2;ball.y=H-60;ball.vx=3.5*(Math.random()>.5?1:-1);ball.vy=-3.5;}
+  if(ball.y+BALL_R>=pad.y&&ball.y-BALL_R<=pad.y+pad.h&&ball.x>=pad.x&&ball.x<=pad.x+pad.w){ball.vy=-Math.abs(ball.vy);let hit=(ball.x-(pad.x+pad.w/2))/(pad.w/2);ball.vx=hit*5;}
+  bricks.forEach(b=>{if(!b.alive)return;if(ball.x+BALL_R>b.x&&ball.x-BALL_R<b.x+b.w&&ball.y+BALL_R>b.y&&ball.y-BALL_R<b.y+b.h){b.alive=false;ball.vy*=-1;score+=10;document.getElementById('sc').textContent=score;}});
+  if(bricks.every(b=>!b.alive)){end('You Win!');return;}
+  draw();requestAnimationFrame(loop);
+}
+function end(msg){running=false;document.getElementById('et').textContent=msg;document.getElementById('fs').textContent=score;document.getElementById('over').classList.remove('hidden');}
+function draw(){
+  ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+  bricks.forEach(b=>{if(!b.alive)return;ctx.fillStyle=b.color;ctx.beginPath();ctx.roundRect(b.x,b.y,b.w,b.h,4);ctx.fill();ctx.fillStyle='rgba(255,255,255,0.1)';ctx.fillRect(b.x,b.y,b.w,b.h/2);});
+  ctx.fillStyle='#9a80ff';ctx.beginPath();ctx.roundRect(pad.x,pad.y,pad.w,pad.h,7);ctx.fill();
+  ctx.fillStyle='#f0f0f5';ctx.beginPath();ctx.arc(ball.x,ball.y,BALL_R,0,Math.PI*2);ctx.fill();
+}
+c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();pad.x=Math.max(0,Math.min(W-pad.w,(e.clientX-r.left)*(W/r.width)-pad.w/2));});
+c.addEventListener('touchmove',e=>{e.preventDefault();const r=c.getBoundingClientRect();pad.x=Math.max(0,Math.min(W-pad.w,(e.touches[0].clientX-r.left)*(W/r.width)-pad.w/2));},{passive:false});
+document.getElementById('playBtn').onclick=()=>{document.getElementById('start').classList.add('hidden');init();};
+document.getElementById('retry').onclick=()=>{document.getElementById('over').classList.add('hidden');init();};
+</script>
+</body>
+</html>

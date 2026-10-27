@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snake — Bedrock Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#f0f0f5;font-family:'Inter',system-ui,sans-serif;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#111119;border-bottom:1px solid #1f1f2e}
+.back{display:flex;align-items:center;gap:8px;color:#f0f0f5;text-decoration:none;font-weight:600;font-size:.95rem}
+.back:hover{color:#9a80ff}
+.score{font-weight:700;color:#9a80ff;font-size:1.1rem}
+.wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:16px}
+canvas{border-radius:12px;background:#111119;border:1px solid #1f1f2e;max-width:100%;max-height:100%}
+.overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,10,15,.85);z-index:10}
+.overlay.hidden{display:none}
+.box{background:#16161f;border:1px solid #1f1f2e;border-radius:16px;padding:40px;text-align:center;max-width:340px;width:90%}
+.box h2{font-size:1.5rem;margin-bottom:8px}
+.box p{color:#9090a8;margin-bottom:24px;font-size:.9rem}
+.btn{display:inline-block;padding:12px 32px;background:linear-gradient(135deg,#7c5cff,#5a3dd6);color:#fff;border:none;border-radius:999px;font-weight:600;font-size:.95rem;cursor:pointer}
+.btn:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(124,92,255,.3)}
+.mobile{display:none;grid-template-columns:repeat(3,60px);grid-template-rows:repeat(2,60px);gap:8px;justify-content:center;padding:12px}
+.mobile button{width:60px;height:60px;border-radius:12px;background:#16161f;border:1px solid #1f1f2e;color:#f0f0f5;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.mobile button:active{background:#7c5cff;border-color:#7c5cff}
+@media(max-width:600px){.mobile{display:grid}}
+@media(pointer:coarse){.mobile{display:grid}}
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="back" href="../../">&#8592; Back</a>
+  <div class="score">Score: <span id="sc">0</span></div>
+</div>
+<div class="wrap"><canvas id="c"></canvas></div>
+<div class="mobile" id="mob">
+  <div></div><button id="mu">&#9650;</button><div></div>
+  <button id="ml">&#9664;</button><button id="md">&#9660;</button><button id="mr">&#9654;</button>
+</div>
+<div class="overlay" id="start">
+  <div class="box">
+    <h2>🐍 Snake</h2>
+    <p>Use arrow keys or WASD to move. Eat the food to grow!</p>
+    <button class="btn" id="playBtn">Play</button>
+  </div>
+</div>
+<div class="overlay hidden" id="over">
+  <div class="box">
+    <h2>Game Over</h2>
+    <p>Final score: <span id="fs">0</span></p>
+    <button class="btn" id="retry">Play Again</button>
+  </div>
+</div>
+<script>
+const c=document.getElementById('c'),ctx=c.getContext('2d');
+const CELL=20;let cols,rows,snake,dir,food,score,running,loop;
+
+function resize(){
+  const w=c.parentElement.clientWidth-32,h=c.parentElement.clientHeight-32;
+  cols=Math.floor(Math.min(w,500)/CELL);rows=Math.floor(Math.min(h,500)/CELL);
+  c.width=cols*CELL;c.height=rows*CELL;
+}
+function init(){
+  resize();score=0;document.getElementById('sc').textContent=0;
+  const mx=Math.floor(cols/2),my=Math.floor(rows/2);
+  snake=[{x:mx,y:my},{x:mx-1,y:my},{x:mx-2,y:my}];
+  dir={x:1,y:0};placeFood();running=true;
+  if(loop)clearInterval(loop);
+  loop=setInterval(tick,120);
+}
+function placeFood(){
+  do{food={x:Math.floor(Math.random()*cols),y:Math.floor(Math.random()*rows)}}
+  while(snake.some(s=>s.x===food.x&&s.y===food.y));
+}
+function tick(){
+  if(!running)return;
+  const head={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
+  if(head.x<0||head.x>=cols||head.y<0||head.y>=rows||snake.some(s=>s.x===head.x&&s.y===head.y)){
+    running=false;clearInterval(loop);
+    document.getElementById('fs').textContent=score;
+    document.getElementById('over').classList.remove('hidden');return;
+  }
+  snake.unshift(head);
+  if(head.x===food.x&&head.y===food.y){score++;document.getElementById('sc').textContent=score;placeFood();}
+  else snake.pop();
+  draw();
+}
+function draw(){
+  ctx.fillStyle='#111119';ctx.fillRect(0,0,c.width,c.height);
+  snake.forEach((s,i)=>{ctx.fillStyle=i===0?'#9a80ff':'#7c5cff';ctx.fillRect(s.x*CELL+1,s.y*CELL+1,CELL-2,CELL-2);ctx.fillStyle='rgba(255,255,255,0.06)';ctx.fillRect(s.x*CELL+1,s.y*CELL+1,CELL-2,(CELL-2)/2);});
+  ctx.fillStyle='#34d399';ctx.beginPath();ctx.arc(food.x*CELL+CELL/2,food.y*CELL+CELL/2,CELL/2-2,0,Math.PI*2);ctx.fill();
+}
+document.addEventListener('keydown',e=>{
+  const map={ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0},
+    w:{x:0,y:-1},s:{x:0,y:1},a:{x:-1,y:0},d:{x:1,y:0}};
+  const d=map[e.key];if(!d)return;
+  if(d.x!==-dir.x||d.y!==-dir.y){dir=d;e.preventDefault();}
+});
+document.getElementById('mu').onclick=()=>{if(dir.y!==1)dir={x:0,y:-1}};
+document.getElementById('md').onclick=()=>{if(dir.y!==-1)dir={x:0,y:1}};
+document.getElementById('ml').onclick=()=>{if(dir.x!==1)dir={x:-1,y:0}};
+document.getElementById('mr').onclick=()=>{if(dir.x!==-1)dir={x:1,y:0}};
+document.getElementById('playBtn').onclick=()=>{document.getElementById('start').classList.add('hidden');init();};
+document.getElementById('retry').onclick=()=>{document.getElementById('over').classList.add('hidden');init();};
+window.addEventListener('resize',()=>{if(running){resize();draw();}});
+</script>
+</body>
+</html>

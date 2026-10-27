@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cookie Clicker — Bedrock Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#f0f0f5;font-family:'Inter',system-ui,sans-serif;display:flex;flex-direction:column;height:100vh;overflow:auto}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#111119;border-bottom:1px solid #1f1f2e;position:sticky;top:0;z-index:5}
+.back{color:#f0f0f5;text-decoration:none;font-weight:600}.back:hover{color:#9a80ff}
+.cps{font-weight:700;color:#9a80ff;font-size:.9rem}
+.main{flex:1;display:flex;flex-direction:column;align-items:center;padding:32px 16px;gap:24px}
+.counter{font-family:'Space Grotesk','Inter',sans-serif;font-size:clamp(2rem,6vw,3.5rem);font-weight:900;text-align:center}
+.counter small{display:block;font-size:.5em;color:#9090a8;font-weight:500}
+.cookie{width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#d4a44c,#b8860b 60%,#8b6914);display:flex;align-items:center;justify-content:center;font-size:5rem;cursor:pointer;transition:transform .08s;user-select:none;box-shadow:0 8px 30px rgba(0,0,0,.4);position:relative}
+.cookie:active{transform:scale(.92)}
+.cookie:hover{box-shadow:0 8px 40px rgba(180,135,20,.4)}
+.float{position:absolute;color:#fbbf24;font-weight:800;font-size:1.2rem;pointer-events:none;animation:floatUp .8s ease-out forwards}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-60px)}}
+.shop{width:100%;max-width:420px;display:flex;flex-direction:column;gap:8px}
+.shop-title{font-weight:700;font-size:.85rem;text-transform:uppercase;letter-spacing:.06em;color:#606078;margin-bottom:4px}
+.upgrade{display:flex;align-items:center;gap:14px;padding:14px 18px;background:#16161f;border:1px solid #1f1f2e;border-radius:12px;cursor:pointer;transition:all .15s}
+.upgrade:hover:not(.locked){border-color:#7c5cff;background:#1c1c28;transform:translateY(-2px)}
+.upgrade.locked{opacity:.4;cursor:not-allowed}
+.upgrade__icon{font-size:1.8rem;flex-shrink:0}
+.upgrade__info{flex:1;min-width:0}
+.upgrade__name{font-weight:700;font-size:.9rem}
+.upgrade__desc{font-size:.75rem;color:#9090a8}
+.upgrade__cost{font-weight:700;color:#fbbf24;white-space:nowrap;font-size:.9rem}
+.upgrade__count{font-size:.75rem;color:#606078}
+</style>
+</head>
+<body>
+<div class="top"><a class="back" href="../../">&#8592; Back</a><div class="cps" id="cps">0 cookies/sec</div></div>
+<div class="main">
+  <div class="counter"><span id="count">0</span> cookies<small>Click the cookie!</small></div>
+  <div class="cookie" id="cookie">🍪</div>
+  <div class="shop">
+    <div class="shop-title">Upgrades</div>
+    <div id="shopList"></div>
+  </div>
+</div>
+<script>
+const UPGRADES=[
+  {name:'Cursor',      desc:'Auto-clicks once every 10s', icon:'👆', baseCost:15,   cps:0.1},
+  {name:'Grandma',     desc:'A nice grandma to bake cookies', icon:'👵', baseCost:100,  cps:1},
+  {name:'Farm',        desc:'Grows cookie plants',        icon:'🌾', baseCost:500,  cps:5},
+  {name:'Factory',     desc:'Produces mass cookies',      icon:'🏭', baseCost:2000, cps:20},
+  {name:'Bank',        desc:'Generates cookie interest',  icon:'🏦', baseCost:7000, cps:50},
+  {name:'Temple',      desc:'Full of cookie wisdom',      icon:'⛩️', baseCost:25000,cps:150},
+  {name:'Wizard Tower',desc:'Conjures cookies from nothing',icon:'🧙',baseCost:100000,cps:500},
+];
+
+let cookies=0,totalCps=0,owned=UPGRADES.map(()=>0);
+const countEl=document.getElementById('count'),cpsEl=document.getElementById('cps'),shopEl=document.getElementById('shopList'),cookieEl=document.getElementById('cookie');
+
+function fmt(n){if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return Math.floor(n).toString();}
+function cost(i){return Math.floor(UPGRADES[i].baseCost*Math.pow(1.15,owned[i]));}
+
+function renderShop(){
+  shopEl.innerHTML='';
+  UPGRADES.forEach((u,i)=>{
+    const c=cost(i);const locked=cookies<c;
+    const el=document.createElement('div');el.className='upgrade'+(locked?' locked':'');
+    el.innerHTML=`<div class="upgrade__icon">${u.icon}</div><div class="upgrade__info"><div class="upgrade__name">${u.name}</div><div class="upgrade__desc">${u.desc}</div></div><div style="text-align:right"><div class="upgrade__cost">${fmt(c)}</div><div class="upgrade__count">Owned: ${owned[i]}</div></div>`;
+    if(!locked)el.addEventListener('click',()=>buy(i));
+    shopEl.appendChild(el);
+  });
+}
+function buy(i){
+  const c=cost(i);if(cookies<c)return;
+  cookies-=c;owned[i]++;
+  totalCps=UPGRADES.reduce((s,u,j)=>s+u.cps*owned[j],0);
+  cpsEl.textContent=totalCps.toFixed(1)+' cookies/sec';
+  update();renderShop();
+}
+function update(){countEl.textContent=fmt(cookies);}
+
+cookieEl.addEventListener('click',e=>{
+  cookies++;update();renderShop();
+  const f=document.createElement('div');f.className='float';f.textContent='+1';
+  f.style.left=Math.random()*60+20+'%';f.style.top='20%';
+  cookieEl.appendChild(f);setTimeout(()=>f.remove(),800);
+});
+
+setInterval(()=>{if(totalCps>0){cookies+=totalCps/20;update();renderShop();}},50);
+renderShop();
+</script>
+</body>
+</html>

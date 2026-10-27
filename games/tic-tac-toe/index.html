@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tic Tac Toe — Bedrock Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#f0f0f5;font-family:'Inter',system-ui,sans-serif;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#111119;border-bottom:1px solid #1f1f2e}
+.back{color:#f0f0f5;text-decoration:none;font-weight:600}.back:hover{color:#9a80ff}
+.info{font-weight:700;color:#9a80ff}
+.wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:16px}
+.status{font-size:1.2rem;font-weight:700;min-height:1.5em}
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:min(85vw,320px)}
+.cell{aspect-ratio:1;border-radius:12px;background:#16161f;border:2px solid #1f1f2e;display:flex;align-items:center;justify-content:center;font-size:clamp(2rem,8vw,3.5rem);font-weight:900;cursor:pointer;transition:all .15s ease;user-select:none}
+.cell:hover:not(.taken){border-color:#2a2a3d;background:#1e1e2a}
+.cell.taken{cursor:default}
+.cell.x{color:#9a80ff}.cell.o{color:#f87171}
+.cell.win{border-color:#34d399;background:rgba(52,211,153,.1)}
+.scores{display:flex;gap:32px;font-size:.9rem}
+.scores span{display:flex;flex-direction:column;align-items:center;gap:2px}
+.scores .num{font-size:1.4rem;font-weight:800}
+.x-color{color:#9a80ff}.o-color{color:#f87171}.d-color{color:#fbbf24}
+.btn{padding:10px 24px;background:linear-gradient(135deg,#7c5cff,#5a3dd6);color:#fff;border:none;border-radius:999px;font-weight:600;cursor:pointer;font-size:.9rem}
+.btn:hover{transform:translateY(-2px)}
+</style>
+</head>
+<body>
+<div class="top"><a class="back" href="../../">&#8592; Back</a><div class="info">vs CPU</div></div>
+<div class="wrap">
+  <div class="status" id="status">Your turn (X)</div>
+  <div class="board" id="board"></div>
+  <div class="scores">
+    <span><span class="num x-color" id="xw">0</span>You (X)</span>
+    <span><span class="num d-color" id="dw">0</span>Draws</span>
+    <span><span class="num o-color" id="ow">0</span>CPU (O)</span>
+  </div>
+  <button class="btn" id="reset">New Game</button>
+</div>
+<script>
+let board,turn,gameOver,wins={x:0,o:0,d:0};
+const LINES=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,2,8],[2,4,6]];
+// fix: correct diag
+LINES[6]=[0,4,8];
+
+function init(){board=Array(9).fill('');turn='x';gameOver=false;document.getElementById('status').textContent='Your turn (X)';render();}
+
+function render(){
+  const el=document.getElementById('board');el.innerHTML='';
+  board.forEach((v,i)=>{
+    const cell=document.createElement('div');
+    cell.className='cell'+(v?' taken '+v:'');
+    cell.textContent=v?v.toUpperCase():'';
+    cell.addEventListener('click',()=>play(i));
+    el.appendChild(cell);
+  });
+}
+function play(i){
+  if(board[i]||gameOver||turn!=='x')return;
+  board[i]='x';
+  if(check('x'))return;
+  if(board.every(c=>c)){draw();return;}
+  turn='o';document.getElementById('status').textContent='CPU thinking...';render();
+  setTimeout(cpuMove,400);
+}
+function cpuMove(){
+  // minimax-lite: win>block>center>corner>edge
+  let move=findWin('o')||findWin('x');
+  if(move===undefined){
+    if(!board[4])move=4;
+    else{const corners=[0,2,6,8].filter(i=>!board[i]);if(corners.length)move=corners[Math.floor(Math.random()*corners.length)];
+    else{const edges=[1,3,5,7].filter(i=>!board[i]);move=edges[Math.floor(Math.random()*edges.length)];}}
+  }
+  board[move]='o';
+  if(check('o'))return;
+  if(board.every(c=>c)){draw();return;}
+  turn='x';document.getElementById('status').textContent='Your turn (X)';render();
+}
+function findWin(p){for(const l of LINES){const vals=l.map(i=>board[i]);if(vals.filter(v=>v===p).length===2&&vals.includes('')){return l[vals.indexOf('')];}}}
+function check(p){
+  for(const l of LINES){if(l.every(i=>board[i]===p)){gameOver=true;highlight(l);
+    if(p==='x'){wins.x++;document.getElementById('xw').textContent=wins.x;document.getElementById('status').textContent='You win!';}
+    else{wins.o++;document.getElementById('ow').textContent=wins.o;document.getElementById('status').textContent='CPU wins!';}return true;}}return false;
+}
+function highlight(l){render();const cells=document.querySelectorAll('.cell');l.forEach(i=>cells[i].classList.add('win'));}
+function draw(){gameOver=true;wins.d++;document.getElementById('dw').textContent=wins.d;document.getElementById('status').textContent='Draw!';render();}
+document.getElementById('reset').onclick=init;
+init();
+</script>
+</body>
+</html>

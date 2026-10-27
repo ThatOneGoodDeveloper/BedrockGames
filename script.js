@@ -83,7 +83,6 @@
     window.location.replace(settings.panicUrl || 'https://classroom.google.com');
   }
 
-  // Auto-cloak on load
   if (settings.cloak && window.self === window.top && !sessionStorage.getItem('bg-cloaked')) {
     sessionStorage.setItem('bg-cloaked', '1');
     openInBlank();
@@ -122,7 +121,8 @@
     }
 
     filtered.forEach(game => {
-      const card = document.createElement('div');
+      const card = document.createElement('a');
+      card.href = game.path;
       card.className = 'game-card';
       card.dataset.title = game.title;
       card.dataset.id = game.id;
@@ -139,7 +139,6 @@
           <div class="game-card__title">${game.title}</div>
           <div class="game-card__category">${game.category}</div>
         </div>`;
-      card.addEventListener('click', () => openGame(game));
       grid.appendChild(card);
     });
   }
@@ -158,7 +157,6 @@
     renderGames(activeCategory, $('#searchInput').value);
   });
 
-  // Footer category links
   $$('[data-cat-link]').forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
@@ -176,44 +174,6 @@
   const searchInput = $('#searchInput');
   searchInput.addEventListener('input', () => {
     renderGames(activeCategory, searchInput.value);
-  });
-
-  // ─── Game player ───
-  const playerOverlay = $('#playerOverlay');
-  const playerFrame = $('#playerFrame');
-  const playerTitle = $('#playerTitle');
-  const playerLoading = $('#playerLoading');
-  const playerBack = $('#playerBack');
-  const playerFullscreen = $('#playerFullscreen');
-
-  function openGame(game) {
-    playerTitle.textContent = game.title;
-    playerLoading.classList.remove('hidden');
-    playerFrame.src = '';
-    playerOverlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
-
-    const src = CDN + game.path;
-    playerFrame.src = src;
-    playerFrame.onload = () => playerLoading.classList.add('hidden');
-    setTimeout(() => playerLoading.classList.add('hidden'), 8000);
-  }
-
-  playerBack.addEventListener('click', () => {
-    playerOverlay.classList.remove('open');
-    playerFrame.src = '';
-    document.body.style.overflow = '';
-  });
-
-  playerFullscreen.addEventListener('click', () => {
-    if (playerFrame.requestFullscreen) playerFrame.requestFullscreen();
-    else if (playerFrame.webkitRequestFullscreen) playerFrame.webkitRequestFullscreen();
-  });
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && playerOverlay.classList.contains('open')) {
-      playerBack.click();
-    }
   });
 
   // ─── Settings modal ───
@@ -239,7 +199,6 @@
     $('#panicUrlInput').value = settings.panicUrl;
   }
 
-  // Theme buttons
   $$('.theme-opt').forEach(btn => {
     btn.addEventListener('click', () => {
       settings.theme = btn.dataset.themeVal;
@@ -248,28 +207,24 @@
     });
   });
 
-  // Cloak toggle
   $('#cloakToggle').addEventListener('click', function () {
     settings.cloak = !settings.cloak;
     this.setAttribute('aria-checked', String(settings.cloak));
     save('cloak', settings.cloak);
   });
 
-  // Tab title
   $('#tabTitleInput').addEventListener('input', function () {
     settings.tabTitle = this.value;
     save('tabTitle', settings.tabTitle);
     applyTabCloak();
   });
 
-  // Tab icon
   $('#tabIconSelect').addEventListener('change', function () {
     settings.tabIcon = this.value;
     save('tabIcon', settings.tabIcon);
     applyTabCloak();
   });
 
-  // Panic key
   const panicKeyDisplay = $('#panicKeyDisplay');
   const setPanicKeyBtn = $('#setPanicKey');
   let listeningForKey = false;
@@ -292,16 +247,13 @@
     setPanicKeyBtn.textContent = 'Change';
   });
 
-  // Panic URL
   $('#panicUrlInput').addEventListener('input', function () {
     settings.panicUrl = this.value;
     save('panicUrl', settings.panicUrl);
   });
 
-  // Open in about:blank button
   $('#launchBlank').addEventListener('click', openInBlank);
 
-  // Reset
   $('#resetSettings').addEventListener('click', () => {
     if (!confirm('Reset all settings to defaults?')) return;
     try {
@@ -317,7 +269,6 @@
   // ─── Home link ───
   $('#homeLink').addEventListener('click', e => {
     e.preventDefault();
-    if (playerOverlay.classList.contains('open')) playerBack.click();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 

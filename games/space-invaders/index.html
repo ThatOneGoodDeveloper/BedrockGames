@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Invaders — Bedrock Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#f0f0f5;font-family:'Inter',system-ui,sans-serif;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#111119;border-bottom:1px solid #1f1f2e}
+.back{color:#f0f0f5;text-decoration:none;font-weight:600}.back:hover{color:#9a80ff}
+.info{display:flex;gap:20px;font-weight:700;color:#9a80ff}
+.wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:16px}
+canvas{border-radius:12px;border:1px solid #1f1f2e}
+.overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,10,15,.85);z-index:10}
+.overlay.hidden{display:none}
+.box{background:#16161f;border:1px solid #1f1f2e;border-radius:16px;padding:40px;text-align:center;max-width:340px;width:90%}
+.box h2{font-size:1.5rem;margin-bottom:8px}.box p{color:#9090a8;margin-bottom:24px}
+.btn{padding:12px 32px;background:linear-gradient(135deg,#7c5cff,#5a3dd6);color:#fff;border:none;border-radius:999px;font-weight:600;cursor:pointer}
+.btn:hover{transform:translateY(-2px)}
+.mobile{display:none;grid-template-columns:repeat(3,64px);gap:8px;justify-content:center;padding:10px}
+.mobile button{width:64px;height:56px;border-radius:10px;background:#16161f;border:1px solid #1f1f2e;color:#f0f0f5;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.mobile button:active{background:#7c5cff}
+@media(pointer:coarse){.mobile{display:grid}}
+</style>
+</head>
+<body>
+<div class="top"><a class="back" href="../../">&#8592; Back</a><div class="info"><span>Score: <span id="sc">0</span></span><span>Lives: <span id="lv">3</span></span></div></div>
+<div class="wrap"><canvas id="c"></canvas></div>
+<div class="mobile"><button id="ml">&#9664;</button><button id="mf">🔥</button><button id="mr">&#9654;</button></div>
+<div class="overlay" id="start"><div class="box"><h2>👾 Space Invaders</h2><p>Arrow keys to move, Space to shoot. Destroy all aliens!</p><button class="btn" id="playBtn">Play</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h2 id="et">Game Over</h2><p>Score: <span id="fs">0</span></p><button class="btn" id="retry">Play Again</button></div></div>
+<script>
+const c=document.getElementById('c'),ctx=c.getContext('2d');
+const W=420,H=520;c.width=W;c.height=H;
+const SHIP_W=32,SHIP_H=20,ALIEN_W=28,ALIEN_H=20;
+let ship,aliens,bullets,alienBullets,score,lives,dir,dropNext,speed,running,keys={};
+
+function init(){
+  ship={x:W/2-SHIP_W/2,y:H-40};bullets=[];alienBullets=[];score=0;lives=3;dir=1;dropNext=false;speed=1;running=true;
+  aliens=[];for(let r=0;r<4;r++)for(let cl=0;cl<8;cl++)aliens.push({x:30+cl*45,y:40+r*35,alive:true,row:r});
+  document.getElementById('sc').textContent=0;document.getElementById('lv').textContent=3;
+  requestAnimationFrame(loop);
+}
+function shoot(){if(bullets.length<3)bullets.push({x:ship.x+SHIP_W/2,y:ship.y});}
+function loop(){
+  if(!running)return;
+  if(keys.ArrowLeft||keys.a)ship.x-=5;if(keys.ArrowRight||keys.d)ship.x+=5;
+  ship.x=Math.max(0,Math.min(W-SHIP_W,ship.x));
+  bullets.forEach(b=>b.y-=7);bullets=bullets.filter(b=>b.y>0);
+  alienBullets.forEach(b=>b.y+=4);alienBullets=alienBullets.filter(b=>b.y<H);
+  let edge=false;const alive=aliens.filter(a=>a.alive);
+  alive.forEach(a=>{a.x+=dir*speed;if(a.x<=0||a.x+ALIEN_W>=W)edge=true;});
+  if(edge){dir*=-1;alive.forEach(a=>a.y+=20);speed=Math.min(speed+0.15,4);}
+  if(Math.random()<0.02&&alive.length){const sh=alive[Math.floor(Math.random()*alive.length)];alienBullets.push({x:sh.x+ALIEN_W/2,y:sh.y+ALIEN_H});}
+  bullets.forEach(b=>{aliens.forEach(a=>{if(a.alive&&b.x>a.x&&b.x<a.x+ALIEN_W&&b.y>a.y&&b.y<a.y+ALIEN_H){a.alive=false;b.y=-99;score+=10;document.getElementById('sc').textContent=score;}});});
+  alienBullets.forEach(b=>{if(b.x>ship.x&&b.x<ship.x+SHIP_W&&b.y>ship.y&&b.y<ship.y+SHIP_H){b.y=H+99;lives--;document.getElementById('lv').textContent=lives;if(lives<=0){end('Game Over');return;}}});
+  if(alive.some(a=>a.y+ALIEN_H>=ship.y)){end('Game Over');return;}
+  if(!alive.length){end('You Win!');return;}
+  draw();requestAnimationFrame(loop);
+}
+function end(t){running=false;document.getElementById('et').textContent=t;document.getElementById('fs').textContent=score;document.getElementById('over').classList.remove('hidden');}
+function draw(){
+  ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+  const colors=['#34d399','#3b82f6','#9a80ff','#f87171'];
+  aliens.forEach(a=>{if(!a.alive)return;ctx.fillStyle=colors[a.row];ctx.fillRect(a.x,a.y,ALIEN_W,ALIEN_H);ctx.fillStyle='rgba(0,0,0,0.2)';ctx.fillRect(a.x+4,a.y+6,6,6);ctx.fillRect(a.x+ALIEN_W-10,a.y+6,6,6);});
+  ctx.fillStyle='#9a80ff';ctx.beginPath();ctx.moveTo(ship.x+SHIP_W/2,ship.y);ctx.lineTo(ship.x,ship.y+SHIP_H);ctx.lineTo(ship.x+SHIP_W,ship.y+SHIP_H);ctx.fill();
+  ctx.fillStyle='#fbbf24';bullets.forEach(b=>{ctx.fillRect(b.x-1.5,b.y,3,10);});
+  ctx.fillStyle='#f87171';alienBullets.forEach(b=>{ctx.fillRect(b.x-1.5,b.y,3,10);});
+}
+document.addEventListener('keydown',e=>{keys[e.key]=true;if(e.code==='Space'){e.preventDefault();shoot();}});
+document.addEventListener('keyup',e=>keys[e.key]=false);
+document.getElementById('ml').addEventListener('touchstart',()=>keys.ArrowLeft=true);document.getElementById('ml').addEventListener('touchend',()=>keys.ArrowLeft=false);
+document.getElementById('mr').addEventListener('touchstart',()=>keys.ArrowRight=true);document.getElementById('mr').addEventListener('touchend',()=>keys.ArrowRight=false);
+document.getElementById('mf').addEventListener('touchstart',shoot);
+document.getElementById('playBtn').onclick=()=>{document.getElementById('start').classList.add('hidden');init();};
+document.getElementById('retry').onclick=()=>{document.getElementById('over').classList.add('hidden');init();};
+</script>
+</body>
+</html>

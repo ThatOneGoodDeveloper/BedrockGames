@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pong — Bedrock Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#f0f0f5;font-family:'Inter',system-ui,sans-serif;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#111119;border-bottom:1px solid #1f1f2e}
+.back{color:#f0f0f5;text-decoration:none;font-weight:600}.back:hover{color:#9a80ff}
+.scores{font-weight:700;font-size:1.1rem}.you{color:#9a80ff}.cpu{color:#f87171}
+.wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:16px}
+canvas{border-radius:12px;border:1px solid #1f1f2e}
+.overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,10,15,.85);z-index:10}
+.overlay.hidden{display:none}
+.box{background:#16161f;border:1px solid #1f1f2e;border-radius:16px;padding:40px;text-align:center;max-width:340px;width:90%}
+.box h2{font-size:1.5rem;margin-bottom:8px}.box p{color:#9090a8;margin-bottom:24px}
+.btn{padding:12px 32px;background:linear-gradient(135deg,#7c5cff,#5a3dd6);color:#fff;border:none;border-radius:999px;font-weight:600;cursor:pointer}
+.btn:hover{transform:translateY(-2px)}
+</style>
+</head>
+<body>
+<div class="top"><a class="back" href="../../">&#8592; Back</a><div class="scores"><span class="you" id="ps">0</span> — <span class="cpu" id="cs">0</span></div></div>
+<div class="wrap"><canvas id="c"></canvas></div>
+<div class="overlay" id="start"><div class="box"><h2>🏓 Pong</h2><p>Move your paddle with mouse/touch. First to 7 wins!</p><button class="btn" id="playBtn">Play</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h2 id="et">Game Over</h2><p id="ep"></p><button class="btn" id="retry">Play Again</button></div></div>
+<script>
+const c=document.getElementById('c'),ctx=c.getContext('2d');
+const W=500,H=400;c.width=W;c.height=H;
+const PW=12,PH=80,BR=8,WIN=7;
+let player,cpu,ball,pScore,cScore,running;
+
+function init(){
+  player={x:20,y:H/2-PH/2};cpu={x:W-20-PW,y:H/2-PH/2};
+  ball={x:W/2,y:H/2,vx:4*(Math.random()>.5?1:-1),vy:3*(Math.random()>.5?1:-1)};
+  pScore=0;cScore=0;running=true;
+  document.getElementById('ps').textContent=0;document.getElementById('cs').textContent=0;
+  requestAnimationFrame(loop);
+}
+function reset(){ball.x=W/2;ball.y=H/2;ball.vx=4*(Math.random()>.5?1:-1);ball.vy=3*(Math.random()>.5?1:-1);}
+function loop(){
+  if(!running)return;
+  ball.x+=ball.vx;ball.y+=ball.vy;
+  if(ball.y-BR<0||ball.y+BR>H)ball.vy*=-1;
+  // player paddle
+  if(ball.x-BR<player.x+PW&&ball.y>player.y&&ball.y<player.y+PH){ball.vx=Math.abs(ball.vx)*1.02;ball.vy+=((ball.y-(player.y+PH/2))/PH)*4;}
+  // cpu paddle
+  if(ball.x+BR>cpu.x&&ball.y>cpu.y&&ball.y<cpu.y+PH){ball.vx=-Math.abs(ball.vx)*1.02;ball.vy+=((ball.y-(cpu.y+PH/2))/PH)*4;}
+  // cpu AI
+  const cpuCenter=cpu.y+PH/2;const diff=ball.y-cpuCenter;cpu.y+=Math.sign(diff)*Math.min(Math.abs(diff),3.5);cpu.y=Math.max(0,Math.min(H-PH,cpu.y));
+  // scoring
+  if(ball.x<0){cScore++;document.getElementById('cs').textContent=cScore;if(cScore>=WIN){end('CPU Wins','Better luck next time!');return;}reset();}
+  if(ball.x>W){pScore++;document.getElementById('ps').textContent=pScore;if(pScore>=WIN){end('You Win!','Congratulations!');return;}reset();}
+  draw();requestAnimationFrame(loop);
+}
+function end(t,p){running=false;document.getElementById('et').textContent=t;document.getElementById('ep').textContent=p;document.getElementById('over').classList.remove('hidden');}
+function draw(){
+  ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+  ctx.setLineDash([8,8]);ctx.strokeStyle='#1f1f2e';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#9a80ff';ctx.beginPath();ctx.roundRect(player.x,player.y,PW,PH,6);ctx.fill();
+  ctx.fillStyle='#f87171';ctx.beginPath();ctx.roundRect(cpu.x,cpu.y,PW,PH,6);ctx.fill();
+  ctx.fillStyle='#f0f0f5';ctx.beginPath();ctx.arc(ball.x,ball.y,BR,0,Math.PI*2);ctx.fill();
+}
+c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();player.y=Math.max(0,Math.min(H-PH,(e.clientY-r.top)*(H/r.height)-PH/2));});
+c.addEventListener('touchmove',e=>{e.preventDefault();const r=c.getBoundingClientRect();player.y=Math.max(0,Math.min(H-PH,(e.touches[0].clientY-r.top)*(H/r.height)-PH/2));},{passive:false});
+document.getElementById('playBtn').onclick=()=>{document.getElementById('start').classList.add('hidden');init();};
+document.getElementById('retry').onclick=()=>{document.getElementById('over').classList.add('hidden');init();};
+</script>
+</body>
+</html>
