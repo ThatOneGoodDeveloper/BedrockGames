@@ -450,7 +450,7 @@ input, select, textarea { font: inherit; color: inherit; }
       <div class="game-player__actions">
         <button class="game-player__btn" id="gamePlayerFav" aria-label="Toggle favorite">Save</button>
         <button class="game-player__btn" id="gamePlayerFullscreen" aria-label="Fullscreen">Full</button>
-        <button class="game-player__btn" id="gamePlayerNewTab" aria-label="Open in new tab">Tab</button>
+        <button class="game-player__btn" id="gamePlayerNewTab" aria-label="Open in an about:blank tab" title="Open in an about:blank tab">Tab</button>
       </div>
     </div>
     <iframe class="game-player__frame" id="gamePlayerFrame" title="Game" allow="fullscreen; autoplay; gamepad; pointer-lock; clipboard-write; accelerometer; gyroscope" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
@@ -765,7 +765,7 @@ input, select, textarea { font: inherit; color: inherit; }
 
   <footer class="footer">
     <div class="footer__inner">
-      <span>Bedrock Games &copy; 2026 <span class="footer__build">Build 2026-11-01 22:42 UTC</span></span>
+      <span>Bedrock Games &copy; 2026 <span class="footer__build">Build 2026-11-01 22:44 UTC</span></span>
       <nav class="footer__links">
         <a href="#" data-view="games">Games</a>
         <a href="#" data-view="browser">Browser</a>
@@ -2378,7 +2378,7 @@ const GAME_SOURCES = {
   const $ = (sel, ctx) => (ctx || document).querySelector(sel);
   const $$ = (sel, ctx) => [...(ctx || document).querySelectorAll(sel)];
   const root = document.documentElement;
-  const BUILD = '2026-11-01 22:42 UTC';
+  const BUILD = '2026-11-01 22:44 UTC';
   const FAVICON = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%20viewBox%3D%220%200%2064%2064%22%20aria-hidden%3D%22true%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22lg1%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%233a3c43%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23111215%22%2F%3E%3C%2FlinearGradient%3E%3CradialGradient%20id%3D%22lr1%22%20cx%3D%220.28%22%20cy%3D%220.18%22%20r%3D%220.85%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230a84ff%22%20stop-opacity%3D%220.55%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230a84ff%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2215%22%20fill%3D%22url%28%23lg1%29%22%2F%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2215%22%20fill%3D%22url%28%23lr1%29%22%2F%3E%3Cpath%20d%3D%22M12.00%2023.00L32.00%2034.00L32.00%2056.00L12.00%2045.00Z%22%20fill%3D%22%234b4d54%22%2F%3E%3Cpath%20d%3D%22M14.80%2026.74L18.40%2028.72L18.40%2030.92L14.80%2028.94Z%22%20fill%3D%22%23000000%22%20fill-opacity%3D%220.30%22%2F%3E%3Cpath%20d%3D%22M23.00%2030.37L25.80%2031.91L25.80%2034.55L23.00%2033.01Z%22%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.17%22%2F%3E%3Cpath%20d%3D%22M18.00%2033.34L21.20%2035.10L21.20%2037.08L18.00%2035.32Z%22%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.17%22%2F%3E%3Cpath%20d%3D%22M26.00%2039.06L29.60%2041.04L29.60%2043.46L26.00%2041.48Z%22%20fill%3D%22%23000000%22%20fill-opacity%3D%220.30%22%2F%3E%3Cpath%20d%3D%22M14.00%2036.86L17.00%2038.51L17.00%2040.71L14.00%2039.06Z%22%20fill%3D%22%23000000%22%20fill-opacity%3D%220.30%22%2F%3E%3Cpath%20d%3D%22M21.60%2041.92L25.20%2043.90L25.20%2045.88L21.60%2043.90Z%22%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.17%22%2F%3E%3Cpath%20d%3D%22M27.60%2047.86L30.40%2049.40L30.40%2051.60L27.60%2050.06Z%22%20fill%3D%22%23000000%22%20fill-opacity%3D%220.30%22%2F%3E%3Cpath%20d%3D%22M17.00%2044.67L20.40%2046.54L20.40%2048.30L17.00%2046.43Z%22%20fill%3D%22%23000000%22%20fill-opacity%3D%220.30%22%2F%3E%3Cpath%20d%3D%22M32.00%2034.00L52.00%2023.00L52.00%2045.00L32.00%2056.00Z%22%20fill%3D%22%2333353a%22%2F%3E%3Cpath%20d%3D%22M44.00%2030.04L47.20%2028.28L47.20%2030.48L44.00%2032.24Z%22%20fill%3D%22%23000000%22%20fill-opacity%3D%220.30%22%2F%3E%3Cpath%20d%3D%22M35.60%2033.78L38.40%2032.24L38.40%2034.44L35.60%2035.98Z%22%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.17%22%2F%3E%3Cpath%20d%3D%22M41.00%2036.53L44.60%2034.55L44.60%2036.53L41.00%2038.51Z%22%20fill%3D%22%23000000%22%20fill-opacity%3D%220.30%22%2F%3E%3Cpath%20d%3D%22M34.40%2041.92L37.40%2040.27L37.40%2042.69L34.40%2044.34Z%22%20fill%3D%22%23000000%22%20fill-opacity%3D%220.30%22%2F%3E%3Cpath%20d%3D%22M46.40%2038.18L49.60%2036.42L49.60%2038.62L46.40%2040.38Z%22%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.17%22%2F%3E%3Cpath%20d%3D%22M38.80%2044.78L42.00%2043.02L42.00%2045.00L38.80%2046.76Z%22%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.17%22%2F%3E%3Cpath%20d%3D%22M44.40%2044.78L47.40%2043.13L47.40%2045.33L44.40%2046.98Z%22%20fill%3D%22%23000000%22%20fill-opacity%3D%220.30%22%2F%3E%3Cpath%20d%3D%22M35.00%2050.83L38.20%2049.07L38.20%2050.83L35.00%2052.59Z%22%20fill%3D%22%23000000%22%20fill-opacity%3D%220.30%22%2F%3E%3Cpath%20d%3D%22M32.00%2012.00L52.00%2023.00L32.00%2034.00L12.00%2023.00Z%22%20fill%3D%22%2374777f%22%2F%3E%3Cpath%20d%3D%22M31.00%2014.75L34.20%2016.51L31.40%2018.05L28.20%2016.29Z%22%20fill%3D%22%23000000%22%20fill-opacity%3D%220.30%22%2F%3E%3Cpath%20d%3D%22M39.40%2017.83L42.20%2019.37L39.80%2020.69L37.00%2019.15Z%22%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.17%22%2F%3E%3Cpath%20d%3D%22M42.00%2022.34L45.00%2023.99L41.80%2025.75L38.80%2024.10Z%22%20fill%3D%22%23000000%22%20fill-opacity%3D%220.30%22%2F%3E%3Cpath%20d%3D%22M26.40%2019.92L29.80%2021.79L27.20%2023.22L23.80%2021.35Z%22%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.17%22%2F%3E%3Cpath%20d%3D%22M33.40%2023.33L35.80%2024.65L32.80%2026.30L30.40%2024.98Z%22%20fill%3D%22%23000000%22%20fill-opacity%3D%220.30%22%2F%3E%3Cpath%20d%3D%22M35.60%2027.62L38.20%2029.05L35.80%2030.37L33.20%2028.94Z%22%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.17%22%2F%3E%3Cpath%20d%3D%22M18.00%2021.46L20.80%2023.00L18.40%2024.32L15.60%2022.78Z%22%20fill%3D%22%23000000%22%20fill-opacity%3D%220.30%22%2F%3E%3Cpath%20d%3D%22M24.80%2024.76L28.00%2026.52L25.20%2028.06L22.00%2026.30Z%22%20fill%3D%22%23000000%22%20fill-opacity%3D%220.30%22%2F%3E%3Cpath%20d%3D%22M28.20%2028.39L30.60%2029.71L28.60%2030.81L26.20%2029.49Z%22%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.17%22%2F%3E%3Cpath%20d%3D%22M12%2023L32%2012L52%2023%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%220.38%22%20stroke-width%3D%221.2%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M12%2023L32%2012%22%20fill%3D%22none%22%20stroke%3D%22%237cc4ff%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22butt%22%2F%3E%3C%2Fsvg%3E';
   const HEART_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="#ff3b30" d="M12 20.8C6.2 16.9 2.6 13.6 2.6 9.5 2.6 6.9 4.6 5 7 5c1.9 0 3.6 1 5 3 1.4-2 3.1-3 5-3 2.4 0 4.4 1.9 4.4 4.5 0 4.1-3.6 7.4-9.4 11.3z"/></svg>';
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -2515,15 +2515,9 @@ const GAME_SOURCES = {
     try { window.top.location.replace(url); } catch { window.location.replace(url); }
   }
 
-  function openInBlank(quiet) {
-    const win = window.open('about:blank', '_blank');
-    if (!win) {
-      if (quiet !== true) showToast('Pop-up blocked. Allow pop-ups for this site and try again.');
-      return false;
-    }
+  function writeBlankDoc(win, src) {
     const title = settings.tabTitle || 'Google Docs';
     const icon = settings.tabIcon && ICONS[settings.tabIcon] ? ICONS[settings.tabIcon] : '';
-    const src = window.location.href.split('#')[0];
     try {
       win.document.open();
       win.document.write(
@@ -2537,11 +2531,21 @@ const GAME_SOURCES = {
         '</body></html>'
       );
       win.document.close();
+      return true;
     } catch {
       win.close();
       showToast('Could not open about:blank in this browser.');
       return false;
     }
+  }
+
+  function openInBlank(quiet) {
+    const win = window.open('about:blank', '_blank');
+    if (!win) {
+      if (quiet !== true) showToast('Pop-up blocked. Allow pop-ups for this site and try again.');
+      return false;
+    }
+    if (!writeBlankDoc(win, window.location.href.split('#')[0])) return false;
     try { sessionStorage.setItem('bg-cloaked', '1'); } catch {}
     window.location.replace(settings.panicUrl || DEFAULTS.panicUrl);
     return true;
@@ -2627,7 +2631,10 @@ const GAME_SOURCES = {
   });
   $('#gamePlayerNewTab').addEventListener('click', () => {
     const game = currentGameId && getGameById(currentGameId);
-    if (game) window.open(getGameUrl(game), '_blank');
+    if (!game) return;
+    const win = window.open('about:blank', '_blank');
+    if (!win) { showToast('Pop-up blocked. Allow pop-ups for this site and try again.'); return; }
+    if (writeBlankDoc(win, new URL(getGameUrl(game), window.location.href).href)) closeGame();
   });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && gamePlayer.classList.contains('open')) { e.preventDefault(); closeGame(); }
