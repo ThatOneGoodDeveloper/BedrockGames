@@ -1040,3 +1040,54 @@ html.embed .skip-link, html.embed #btnFullscreen, html.embed #shareGame { displa
 html.embed body, html.embed main, html.embed .game-layout, html.embed .game-main { margin: 0; padding: 0; max-width: none; display: block; }
 html.embed .game-shell { position: fixed; inset: 0; margin: 0; border-radius: 0; display: flex; flex-direction: column; max-width: none; width: 100%; height: 100%; }
 html.embed .game-stage { flex: 1 1 auto; min-height: 0; height: auto !important; aspect-ratio: auto !important; max-height: none !important; }
+
+/* ==========================================================================
+   8-bit skin: one pixel font, flat colors, hard edges, no blur or gradients
+   ========================================================================== */
+@font-face { font-family: 'Press Start 2P'; src: url('../fonts/PressStart2P.ttf') format('truetype'); font-display: swap; }
+:root {
+  --bg: #10142e; --bg-soft: #10142e; --surface: #1d2b53; --surface-2: #26376b; --surface-3: #2f4486;
+  --line: #c2c3c7; --line-strong: #fff1e8; --text: #fff1e8; --muted: #9aa0c8; --muted-2: #9aa0c8;
+  --accent: #ff004d; --accent-2: #ffec27; --accent-3: #00e436; --danger: #ff004d; --warn: #ffa300;
+  --radius: 0; --radius-sm: 0; --shadow: none;
+  --font: 'Press Start 2P', 'Courier New', monospace; --mono: 'Press Start 2P', 'Courier New', monospace;
+}
+html { -webkit-font-smoothing: none; }
+body { font-size: 11px; line-height: 1.9; background: #10142e; }
+*, *::before, *::after { border-radius: 0 !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+.game-shell { background: #10142e; border: 4px solid var(--line); box-shadow: 8px 8px 0 #000; }
+.game-toolbar { background: #1d2b53; border-bottom: 4px solid var(--line); }
+.hud-item { background: #10142e; border: 3px solid var(--line); padding: 0.3rem 0.55rem; }
+.hud-label { font-size: 8px; font-weight: normal; letter-spacing: 0; }
+.hud-value { font-size: 12px; font-weight: normal; }
+.game-btn {
+  min-height: 34px; padding: 0 0.7rem; background-image: none !important; background-color: #10142e;
+  border: 3px solid var(--line); font-size: 8px; font-weight: normal; text-transform: uppercase; box-shadow: 3px 3px 0 #000; transition: none;
+}
+.game-btn:hover { background-color: #ffec27; color: #000; border-color: #000; transform: none; box-shadow: 3px 3px 0 #000; }
+.game-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #000; }
+.game-btn[aria-pressed="true"] { background-color: #ff004d; color: #fff1e8; border-color: #fff1e8; }
+.game-stage, .game-stage[data-ready="true"] { background: #000; background-image: none; }
+.game-overlay { background: rgba(0, 0, 0, 0.8); }
+.game-overlay[data-tone="over"] { background: rgba(60, 0, 20, 0.85); }
+.game-overlay[data-tone="win"] { background: rgba(0, 50, 20, 0.85); }
+.overlay-card { background: #1d2b53; border: 4px solid var(--line); box-shadow: 8px 8px 0 #000; }
+.overlay-kicker { color: #ffec27; font-size: 8px; font-weight: normal; letter-spacing: 0; }
+.overlay-card h2 { font-size: 16px; font-weight: normal; line-height: 1.5; text-transform: uppercase; }
+.overlay-card p { font-size: 9px; line-height: 1.9; }
+.overlay-hint { font-size: 8px !important; }
+.overlay-card .btn, .btn.btn-primary {
+  background: #ffec27; color: #000; border: 4px solid #000; outline: 4px solid #ffec27; box-shadow: none;
+  font-size: 11px; font-weight: normal; text-transform: uppercase; padding: 1rem;
+}
+.overlay-card .btn:hover { background: #fff1e8; outline-color: #fff1e8; }
+.game-status { background: #1d2b53; border-top: 4px solid var(--line); font-size: 8px; }
+.kbd, kbd { background: #10142e; border: 2px solid var(--line); color: var(--text); font-family: var(--font); }
+.touch-btn { background: #1d2b53; border: 3px solid var(--line); box-shadow: 3px 3px 0 #000; font-family: var(--font); }
+.site-header, .site-footer { background: #1d2b53; border-color: var(--line); }
+.panel, .game-card, .sidebar-card, .aside-card { background-image: none; }
+.brand-mark, .site-header, .btn, .btn-primary, .board-btn.is-active { background-image: none !important; }
+.brand-mark { background-color: #ff004d; color: #fff1e8; font-size: 12px; }
+.board-btn.is-active { background-color: #ff004d; border-color: #fff1e8; }
+.brand-text, .main-nav a { font-size: 9px; white-space: nowrap; }
+.main-nav { gap: 14px; flex-wrap: wrap; }
