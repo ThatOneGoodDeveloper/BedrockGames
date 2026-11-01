@@ -13,7 +13,7 @@
         var t = g('theme', 'system');
         if (t === 'system') t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
         r.setAttribute('data-theme', t);
-        if (g('crt', true)) r.classList.add('crt');
+        if (g('crt', false)) r.classList.add('crt');
       } catch (e) {}
     })();
   </script>
@@ -40,10 +40,11 @@
   --fs-sm: 10px;
   --fs-md: 12px;
   --fs-lg: 16px;
-  --bw: 4px;
+  --bw: 3px;
+  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --nav-row: 64px;
   --nav-h: 112px;
-  --cursor: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2232%22%20viewBox%3D%220%200%2012%2016%22%20shape-rendering%3D%22crispEdges%22%20aria-hidden%3D%22true%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%221%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%222%22%20y%3D%222%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%223%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%224%22%20width%3D%223%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%225%22%20width%3D%224%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%225%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%226%22%20width%3D%225%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%227%22%20width%3D%226%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%227%22%20y%3D%227%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%228%22%20width%3D%227%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%228%22%20y%3D%228%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%229%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%229%22%20width%3D%228%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%229%22%20y%3D%229%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%2210%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%2210%22%20width%3D%225%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%2210%22%20width%3D%225%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%2211%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%2211%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%223%22%20y%3D%2211%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%2211%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%2211%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%2212%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%2212%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%222%22%20y%3D%2212%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%2212%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%2212%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%227%22%20y%3D%2212%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%2213%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%2213%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%2213%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%227%22%20y%3D%2213%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%2214%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%2214%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%2214%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%228%22%20y%3D%2214%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%2215%22%20width%3D%223%22%20height%3D%221%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E") 0 0, auto;
+  --cursor: auto;
 }
 :root[data-theme="light"] {
   --bg: #9bbc0f;
@@ -64,9 +65,8 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; cursor: var(--cursor); }
 body {
-  font-family: var(--font); font-size: var(--fs-sm); line-height: 1.8;
+  font-family: var(--font-ui); font-size: 15px; line-height: 1.6;
   background: var(--bg); color: var(--ink); overflow-x: hidden;
-  -webkit-font-smoothing: none; -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
 }
 body::before {
@@ -375,6 +375,67 @@ select { cursor: var(--cursor); }
   .browser-stage__bar .game-player__btn:nth-last-child(2), .browser-stage__bar .game-player__btn:last-child { margin-left: auto; }
 }
 
+/* ---------- Softer pass: pixel type for headings and controls, plain type for reading ---------- */
+body::before { display: none; }
+.nav__logo, .hero__title, .section__title, .menubar__btn, .btn, .category, .game-player__btn, .theme-opt,
+.settings-group__header h3, .hud, .link-row__tag, .back-to-top, .game-card__play, .empty-state__title, .toggle, .link-adder__title {
+  font-family: var(--font);
+}
+.menubar__btn, .category, .game-player__btn, .theme-opt, .link-row__tag, .hud { font-size: 9px; }
+.btn { font-size: 10px; }
+.btn--sm { font-size: 9px; }
+.nav__logo { font-size: 12px; }
+.hero__title { font-size: clamp(26px, 6vw, 56px); text-shadow: 3px 3px 0 var(--hi); }
+:root[data-theme="light"] .hero__title { text-shadow: 3px 3px 0 var(--muted); }
+.hero__line { font-size: 18px; line-height: 1.6; text-transform: none; color: var(--muted); }
+.hud b { font-family: var(--font); font-size: 14px; }
+.section__title { font-size: clamp(15px, 2.2vw, 20px); }
+.section__title::after { height: 2px; background: var(--line); opacity: 0.55; }
+.section__subtitle { font-size: 14px; text-transform: none; }
+
+.btn, .category, .nav__btn, .nav__search-input, .nav__mobile-search-input { box-shadow: none; }
+.btn { box-shadow: 3px 3px 0 var(--shadow); }
+.btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--shadow); }
+.btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--shadow); }
+.btn--primary { outline: 0; }
+.category { box-shadow: 2px 2px 0 var(--shadow); }
+.category:hover { transform: none; box-shadow: 2px 2px 0 var(--shadow); }
+.category--active, .category--active:hover { transform: none; box-shadow: 2px 2px 0 var(--shadow); }
+.game-card { box-shadow: 4px 4px 0 var(--shadow); }
+.game-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--shadow); }
+.game-card:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--shadow); }
+.help, .link-adder, .link-row, .browser-stage { box-shadow: 3px 3px 0 var(--shadow); }
+.back-to-top { outline: 0; box-shadow: 3px 3px 0 var(--shadow); font-size: 9px; }
+
+.game-card__title { font-size: 14px; font-weight: 600; line-height: 1.35; min-height: 2.7em; text-transform: none; }
+.game-card__category { font-size: 12px; text-transform: capitalize; letter-spacing: 0; }
+.empty-state__text { font-size: 14px; text-transform: none; }
+.category__count { font-family: var(--font-ui); font-size: 12px; }
+.help__row { font-size: 14px; line-height: 1.6; text-transform: none; }
+.help__row dt { font-weight: 700; }
+.kbd { font-family: var(--font-ui); font-size: 12px; font-weight: 600; text-transform: none; }
+.settings-row__label { font-size: 14px; font-weight: 600; text-transform: none; }
+.settings-row__desc, .settings-hint { font-size: 13px; line-height: 1.5; }
+.settings-input, .settings-select, .addressbar__input, .nav__search-input, .nav__mobile-search-input {
+  font-family: var(--font-ui); font-size: 15px; text-transform: none;
+}
+.toolbar__field { font-size: 13px; text-transform: none; }
+.toolbar__search { text-transform: none; }
+.link-row__title { font-size: 14px; font-weight: 600; text-transform: none; }
+.link-row__url { font-size: 12px; }
+.browser-status { font-size: 13px; text-transform: none; line-height: 1.5; }
+.browser-stage__url { font-size: 12px; }
+.bulk, .bulk summary { font-size: 13px; text-transform: none; }
+.bulk--help p { font-size: 13px; line-height: 1.7; }
+.toast { font-size: 13px; text-transform: none; }
+.footer__inner { font-size: 13px; text-transform: none; }
+.game-player__title { font-family: var(--font-ui); font-size: 14px; font-weight: 600; text-transform: none; }
+.toggle { font-size: 9px; }
+@media (max-width: 768px) {
+  .game-card { box-shadow: 3px 3px 0 var(--shadow); }
+  .hero__line { font-size: 16px; }
+}
+
   </style>
 </head>
 <body>
@@ -604,7 +665,7 @@ select { cursor: var(--cursor); }
               <span class="settings-row__label">Scanlines</span>
               <span class="settings-row__desc">CRT lines over the page</span>
             </div>
-            <button class="toggle" id="crtToggle" role="switch" aria-checked="true" aria-label="Scanlines"><span class="toggle__slider"></span></button>
+            <button class="toggle" id="crtToggle" role="switch" aria-checked="false" aria-label="Scanlines"><span class="toggle__slider"></span></button>
           </div>
         </div>
 
@@ -2379,7 +2440,7 @@ const GAME_SOURCES = {
 
   const DEFAULTS = {
     theme: 'system', cloak: false, tabTitle: '', tabIcon: '',
-    panicKey: '`', panicUrl: 'https://classroom.google.com', crt: true, autoFs: true,
+    panicKey: '`', panicUrl: 'https://classroom.google.com', crt: false, autoFs: true,
     proxyEngine: 'uv', searchEngine: 'duckduckgo', wispUrl: '',
   };
   let settings = {};

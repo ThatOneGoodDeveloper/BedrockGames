@@ -1050,10 +1050,9 @@ html.embed .game-stage { flex: 1 1 auto; min-height: 0; height: auto !important;
   --line: #c2c3c7; --line-strong: #fff1e8; --text: #fff1e8; --muted: #9aa0c8; --muted-2: #9aa0c8;
   --accent: #ff004d; --accent-2: #ffec27; --accent-3: #00e436; --danger: #ff004d; --warn: #ffa300;
   --radius: 0; --radius-sm: 0; --shadow: none;
-  --font: 'Press Start 2P', 'Courier New', monospace; --mono: 'Press Start 2P', 'Courier New', monospace;
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; --mono: ui-monospace, Menlo, Consolas, monospace;
 }
-html { -webkit-font-smoothing: none; }
-body { font-size: 11px; line-height: 1.9; background: #10142e; }
+body { font-size: 14px; line-height: 1.6; background: #10142e; }
 *, *::before, *::after { border-radius: 0 !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
 .game-shell { background: #10142e; border: 4px solid var(--line); box-shadow: 8px 8px 0 #000; }
 .game-toolbar { background: #1d2b53; border-bottom: 4px solid var(--line); }
@@ -1074,15 +1073,16 @@ body { font-size: 11px; line-height: 1.9; background: #10142e; }
 .overlay-card { background: #1d2b53; border: 4px solid var(--line); box-shadow: 8px 8px 0 #000; }
 .overlay-kicker { color: #ffec27; font-size: 8px; font-weight: normal; letter-spacing: 0; }
 .overlay-card h2 { font-size: 16px; font-weight: normal; line-height: 1.5; text-transform: uppercase; }
-.overlay-card p { font-size: 9px; line-height: 1.9; }
-.overlay-hint { font-size: 8px !important; }
+.overlay-card p { font-size: 14px; line-height: 1.6; }
+.overlay-hint { font-size: 12px !important; }
 .overlay-card .btn, .btn.btn-primary {
   background: #ffec27; color: #000; border: 4px solid #000; outline: 4px solid #ffec27; box-shadow: none;
   font-size: 11px; font-weight: normal; text-transform: uppercase; padding: 1rem;
 }
 .overlay-card .btn:hover { background: #fff1e8; outline-color: #fff1e8; }
-.game-status { background: #1d2b53; border-top: 4px solid var(--line); font-size: 8px; }
+.game-status { background: #1d2b53; border-top: 3px solid var(--line); font-size: 12px; }
 .kbd, kbd { background: #10142e; border: 2px solid var(--line); color: var(--text); font-family: var(--font); }
+.game-btn, .hud-label, .hud-value, .overlay-card h2, .overlay-kicker, .overlay-card .btn, .btn.btn-primary, .touch-btn { font-family: 'Press Start 2P', 'Courier New', monospace; }
 .touch-btn { background: #1d2b53; border: 3px solid var(--line); box-shadow: 3px 3px 0 #000; font-family: var(--font); }
 .site-header, .site-footer { background: #1d2b53; border-color: var(--line); }
 .panel, .game-card, .sidebar-card, .aside-card { background-image: none; }
