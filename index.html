@@ -436,6 +436,8 @@ body::before { display: none; }
   .hero__line { font-size: 16px; }
 }
 
+.footer__build { margin-left: 12px; color: var(--muted); font-size: 12px; }
+
   </style>
 </head>
 <body>
@@ -487,6 +489,7 @@ body::before { display: none; }
     <p class="hero__line"><span id="gameCountText">0</span> browser games. Nothing to install.</p>
     <div class="hero__actions">
       <a href="#games" class="btn btn--primary"><span class="blink">&gt;</span> Press start</a>
+      <button class="btn" data-view="browser">Browser</button>
       <button class="btn" id="heroSettingsBtn">Options</button>
     </div>
     <div class="hud">
@@ -801,7 +804,7 @@ body::before { display: none; }
 
   <footer class="footer">
     <div class="footer__inner">
-      <span>Bedrock Games &copy; 2026</span>
+      <span>Bedrock Games &copy; 2026 <span class="footer__build">Build 2026-11-01 22:05 UTC</span></span>
       <nav class="footer__links">
         <a href="#" data-view="games">Games</a>
         <a href="#" data-view="links">Links</a>
@@ -2415,6 +2418,7 @@ const GAME_SOURCES = {
   const $ = (sel, ctx) => (ctx || document).querySelector(sel);
   const $$ = (sel, ctx) => [...(ctx || document).querySelectorAll(sel)];
   const root = document.documentElement;
+  const BUILD = '2026-11-01 22:05 UTC';
   const FAVICON = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%20viewBox%3D%220%200%208%208%22%20shape-rendering%3D%22crispEdges%22%20aria-hidden%3D%22true%22%3E%3Crect%20width%3D%228%22%20height%3D%228%22%20fill%3D%22%2310142e%22%2F%3E%3Crect%20x%3D%222%22%20y%3D%220%22%20width%3D%224%22%20height%3D%221%22%20fill%3D%22%23ff004d%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%226%22%20height%3D%221%22%20fill%3D%22%23ff004d%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%222%22%20width%3D%226%22%20height%3D%221%22%20fill%3D%22%23ff004d%22%2F%3E%3Crect%20x%3D%222%22%20y%3D%223%22%20width%3D%224%22%20height%3D%221%22%20fill%3D%22%23ff004d%22%2F%3E%3Crect%20x%3D%223%22%20y%3D%224%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23fff1e8%22%2F%3E%3Crect%20x%3D%223%22%20y%3D%225%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23fff1e8%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%226%22%20width%3D%228%22%20height%3D%221%22%20fill%3D%22%23fff1e8%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%227%22%20width%3D%228%22%20height%3D%221%22%20fill%3D%22%23fff1e8%22%2F%3E%3C%2Fsvg%3E';
   const HEART_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true"><rect x="1" y="0" width="2" height="1" fill="var(--hi)"/><rect x="5" y="0" width="2" height="1" fill="var(--hi)"/><rect x="0" y="1" width="8" height="1" fill="var(--hi)"/><rect x="0" y="2" width="8" height="1" fill="var(--hi)"/><rect x="0" y="3" width="8" height="1" fill="var(--hi)"/><rect x="1" y="4" width="6" height="1" fill="var(--hi)"/><rect x="2" y="5" width="4" height="1" fill="var(--hi)"/><rect x="3" y="6" width="2" height="1" fill="var(--hi)"/></svg>';
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -3382,6 +3386,21 @@ const GAME_SOURCES = {
   renderFavorites();
   updateHud();
   showPanicKey();
+  // If the browser served a saved older copy, reload once to get the current one.
+  if (/^https?:$/.test(location.protocol)) {
+    fetch(location.href.split('#')[0].split('?')[0], { cache: 'no-store' })
+      .then(r => (r.ok ? r.text() : ''))
+      .then(html => {
+        const m = html.match(/const BUILD = '([^']+)'/);
+        if (!m || m[1] === BUILD) return;
+        let already = false;
+        try { already = sessionStorage.getItem('bg-updated') === m[1]; sessionStorage.setItem('bg-updated', m[1]); } catch {}
+        if (already) return;
+        showToast('New version found. Reloading...');
+        setTimeout(() => location.reload(), 900);
+      })
+      .catch(() => {});
+  }
   const startView = (location.hash.match(/^#\/(\w+)/) || [])[1];
   if (startView && startView !== 'games') showView(startView, { keepScroll: true });
 })();
