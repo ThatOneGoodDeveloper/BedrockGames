@@ -1,3 +1,4 @@
+(function () {
 /**
  * Neon Slope — original pseudo-3D endless runner.
  * Perspective-projected track, three lanes, jumpable barriers and rising speed.
@@ -13,7 +14,7 @@ const FAR_Z = 110;
 const ROAD_HALF = 4.5;
 const LANES = [-3, 0, 3];
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
 
@@ -376,3 +377,6 @@ export default function createGame(api) {
     restart() { reset(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['neon-slope'] = createGame;
+})();

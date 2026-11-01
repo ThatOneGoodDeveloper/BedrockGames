@@ -1,3 +1,4 @@
+(function () {
 /**
  * Checkers — original implementation.
  * 8x8 draughts with mandatory captures, kings, a minimax CPU and local 2P.
@@ -10,7 +11,7 @@ const BOARD = CELL * 8;
 const BX = (W - BOARD) / 2;
 const BY = 92;
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
   api.setScore(0, 'Wins');
@@ -396,3 +397,6 @@ export default function createGame(api) {
     restart() { resetBoard(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['checkers'] = createGame;
+})();

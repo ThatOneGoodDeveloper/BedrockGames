@@ -1,3 +1,4 @@
+(function () {
 /**
  * Stack Master — original one-button tower builder.
  * Perfect-drop combos, clipped overhangs, rising camera and particles.
@@ -8,7 +9,7 @@ const H = 640;
 const BASE_Y = H - 88;
 const BLOCK_H = 28;
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
 
@@ -272,3 +273,6 @@ export default function createGame(api) {
     restart() { reset(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['stack-master'] = createGame;
+})();

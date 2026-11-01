@@ -1,3 +1,4 @@
+(function () {
 /*!
  * chess.js v1.4.0 — https://github.com/jhlywa/chess.js
  * Copyright (c) 2025, Jeff Hlywa. BSD-2-Clause licence.
@@ -3369,4 +3370,6 @@ class Chess {
     }
 }
 
-export { BISHOP, BLACK, Chess, DEFAULT_POSITION, KING, KNIGHT, Move, PAWN, QUEEN, ROOK, SEVEN_TAG_ROSTER, SQUARES, WHITE, validateFen, xoroshiro128 };
+
+window.UGG_Chess = Chess;
+})();

@@ -1,3 +1,4 @@
+(function () {
 /**
  * Cookie Clicker — original idle clicker.
  * Eight producers, one-time upgrades, milestones, offline earnings and auto-save.
@@ -39,7 +40,7 @@ const format = (value) => {
 
 const MILESTONES = [100, 1000, 10000, 100000, 1e6, 1e7, 1e9, 1e12];
 
-export default function createGame(api) {
+function createGame(api) {
   const wrap = document.createElement('div');
   wrap.className = 'cc-wrap';
   wrap.innerHTML = `
@@ -297,3 +298,6 @@ export default function createGame(api) {
     },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['cookie-clicker'] = createGame;
+})();

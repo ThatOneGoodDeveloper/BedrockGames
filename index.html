@@ -7,6 +7,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      try {
+        var r = document.documentElement, g = function (k, d) { var v = localStorage.getItem('bg-' + k); return v === null ? d : JSON.parse(v); };
+        var t = g('theme', 'system');
+        if (t === 'system') t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        r.setAttribute('data-theme', t);
+        var v = g('retro', 70);
+        r.style.setProperty('--retro', v / 100);
+        if (v > 0) r.classList.add('retro');
+        if (v >= 40) r.classList.add('retro-pixel');
+      } catch (e) {}
+    })();
+  </script>
   <style>
 /* === TOKENS === */
 :root {
@@ -675,6 +689,144 @@ input, select { font: inherit; }
   .recent-scroll .game-card { flex: 0 0 140px; }
 }
 
+/* === RETRO LAYER (controlled by Settings > Retro Level) === */
+@font-face { font-family: 'Press Start 2P'; src: url('assets/fonts/PressStart2P.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'VT323'; src: url('assets/fonts/VT323.ttf') format('truetype'); font-display: swap; }
+
+:root.retro[data-theme="dark"] {
+  --bg-primary: #0d0221; --bg-secondary: #150734; --bg-card: #1a0b3d; --bg-card-hover: #240f52;
+  --bg-elevated: #20104a; --bg-input: #12062d; --border: #3d1d86; --border-hover: #6a35e8;
+  --text-primary: #f6f0ff; --text-secondary: #bba7ea; --text-muted: #8670bd;
+  --accent: #ff2a9d; --accent-light: #ff6ec7; --accent-dark: #b80f68;
+  --accent-glow: rgba(255, 42, 157, 0.45); --accent-bg: rgba(255, 42, 157, 0.12);
+  --neon-cyan: #00f0ff; --neon-yellow: #ffe14d;
+}
+:root.retro[data-theme="light"] {
+  --bg-primary: #f3e9d2; --bg-secondary: #eadcbc; --bg-card: #fff8e6; --bg-card-hover: #fff0cc;
+  --bg-elevated: #fff8e6; --bg-input: #f6ecd0; --border: #2a1b4d; --border-hover: #2a1b4d;
+  --text-primary: #2a1b4d; --text-secondary: #54427f; --text-muted: #77669e;
+  --accent: #e0227f; --accent-light: #c0166a; --accent-dark: #8f0e50;
+  --accent-glow: rgba(224, 34, 127, 0.3); --accent-bg: rgba(224, 34, 127, 0.1);
+  --neon-cyan: #0a8f9c; --neon-yellow: #b88400;
+}
+:root.retro-pixel {
+  --radius-sm: 0; --radius-md: 0; --radius-lg: 0; --radius-xl: 0; --radius-full: 0;
+  --font-display: 'Press Start 2P', 'Courier New', monospace;
+  --font-body: 'VT323', 'Courier New', monospace;
+  --transition: 0.12s steps(3, end);
+  font-size: 112.5%;
+}
+
+/* CRT overlay: scanlines + vignette + rolling band */
+:root.retro body::after {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 150;
+  background:
+    radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, calc(var(--retro) * 0.45)) 100%),
+    repeating-linear-gradient(to bottom, rgba(0, 0, 0, calc(var(--retro) * 0.22)) 0 1px, transparent 1px 3px);
+}
+:root.retro[data-theme="light"] body::after {
+  background:
+    radial-gradient(ellipse at center, transparent 60%, rgba(60, 30, 0, calc(var(--retro) * 0.18)) 100%),
+    repeating-linear-gradient(to bottom, rgba(42, 27, 77, calc(var(--retro) * 0.07)) 0 1px, transparent 1px 3px);
+}
+:root.retro body::before {
+  content: ''; position: fixed; left: 0; right: 0; top: 0; height: 18vh; pointer-events: none; z-index: 149;
+  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, calc(var(--retro) * 0.035)), transparent);
+  animation: crt-roll 7s linear infinite;
+}
+@keyframes crt-roll { from { transform: translateY(-20vh); } to { transform: translateY(120vh); } }
+@keyframes retro-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+:root.retro .bg-grid {
+  background-image: linear-gradient(var(--accent-glow) 1px, transparent 1px), linear-gradient(90deg, var(--accent-glow) 1px, transparent 1px);
+  background-size: 40px 40px; opacity: calc(0.15 + var(--retro) * 0.35);
+}
+:root.retro .bg-glow--2 { background: var(--neon-cyan); }
+:root.retro .section__title, :root.retro .hero__stat-num, :root.retro .nav__logo-accent {
+  text-shadow: 0 0 calc(var(--retro) * 14px) var(--accent-glow);
+}
+
+/* Pixel mode: hard edges, chunky shadows, arcade type */
+:root.retro-pixel body { letter-spacing: 0.02em; }
+:root.retro-pixel .nav { border-bottom: 2px solid var(--border); }
+:root.retro-pixel .nav__logo-text { font-family: var(--font-display); font-size: 0.8rem; }
+:root.retro-pixel .hero__title { font-size: clamp(1.4rem, 4.2vw, 2.7rem); line-height: 1.4; letter-spacing: 0; text-transform: uppercase; }
+:root.retro-pixel .hero__title-accent {
+  background: linear-gradient(90deg, var(--accent-light), var(--neon-cyan), var(--neon-yellow));
+  -webkit-background-clip: text; background-clip: text;
+}
+:root.retro-pixel .hero__subtitle { font-size: 1.5rem; line-height: 1.3; }
+:root.retro-pixel .hero__badge { font-size: 1.1rem; border: 2px solid var(--accent); text-transform: uppercase; }
+:root.retro-pixel .hero__badge::before { content: '\25B6'; font-size: 0.8em; animation: retro-blink 1s steps(1) infinite; }
+:root.retro-pixel .hero__stat-num { font-size: 1.3rem; }
+:root.retro-pixel .hero__stat-label { font-size: 1rem; }
+:root.retro-pixel .section__title { font-size: clamp(1rem, 2.4vw, 1.5rem); line-height: 1.5; text-transform: uppercase; }
+:root.retro-pixel .section__subtitle { font-size: 1.35rem; }
+:root.retro-pixel .modal__title { font-size: 1rem; }
+:root.retro-pixel .settings-group__header h3 { font-family: var(--font-display); font-size: 0.6rem; }
+:root.retro-pixel .settings-row__label { font-size: 1.25rem; }
+:root.retro-pixel .settings-row__desc, :root.retro-pixel .settings-hint { font-size: 1.05rem; }
+:root.retro-pixel .feature__title { font-family: var(--font-display); font-size: 0.7rem; line-height: 1.6; }
+:root.retro-pixel .feature__text { font-size: 1.2rem; line-height: 1.2; }
+:root.retro-pixel .footer__heading { font-family: var(--font-display); font-size: 0.6rem; }
+
+:root.retro-pixel .btn, :root.retro-pixel .category, :root.retro-pixel .theme-opt {
+  font-family: var(--font-display); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0;
+}
+:root.retro-pixel .btn { border: 2px solid var(--text-primary); }
+:root.retro-pixel .btn--primary { background: var(--accent); box-shadow: 4px 4px 0 var(--accent-dark); color: #fff; }
+:root.retro-pixel .btn--primary:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--accent-dark); }
+:root.retro-pixel .btn--primary:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--accent-dark); }
+:root.retro-pixel .btn--secondary { box-shadow: 4px 4px 0 var(--border-hover); }
+:root.retro-pixel .btn--secondary:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--border-hover); }
+:root.retro-pixel .btn--danger { border-color: var(--red); }
+
+:root.retro-pixel .category { border-width: 2px; box-shadow: 3px 3px 0 var(--border-hover); }
+:root.retro-pixel .category:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--accent); border-color: var(--accent); }
+:root.retro-pixel .category--active { background: var(--accent); color: #fff; border-color: var(--text-primary); box-shadow: 3px 3px 0 var(--accent-dark); }
+:root.retro-pixel .category__count { font-family: var(--font-body); font-size: 1rem; }
+:root.retro-pixel .category--active .category__count { background: rgba(0, 0, 0, 0.35); color: #fff; }
+
+:root.retro-pixel .game-card, :root.retro-pixel .feature, :root.retro-pixel .settings-group,
+:root.retro-pixel .hero__card, :root.retro-pixel .empty-state, :root.retro-pixel .modal {
+  border-width: 2px; box-shadow: 4px 4px 0 var(--border-hover);
+}
+:root.retro-pixel .modal { box-shadow: 8px 8px 0 var(--accent); border-color: var(--text-primary); }
+:root.retro-pixel .game-card:hover { transform: translate(-3px, -3px); border-color: var(--accent); box-shadow: 7px 7px 0 var(--accent); }
+:root.retro-pixel .game-card:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--accent); }
+:root.retro-pixel .feature:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--neon-cyan); border-color: var(--neon-cyan); }
+:root.retro-pixel .game-card__thumb { filter: saturate(1.25) contrast(1.1); }
+:root.retro-pixel .game-card__title { font-size: 1.25rem; line-height: 1.1; }
+:root.retro-pixel .game-card__category { font-size: 1rem; color: var(--neon-cyan); letter-spacing: 0.08em; }
+:root.retro-pixel .game-card__play-btn { border-radius: 0; box-shadow: 3px 3px 0 var(--accent-dark); }
+:root.retro-pixel .game-card__emoji-badge, :root.retro-pixel .game-card__fav-badge { border-radius: 0; backdrop-filter: none; background: rgba(0, 0, 0, 0.75); border: 2px solid var(--text-primary); }
+:root.retro-pixel .nav__search-input, :root.retro-pixel .nav__mobile-search-input { font-size: 1.2rem; border-width: 2px; }
+:root.retro-pixel .settings-input, :root.retro-pixel .settings-select { font-size: 1.1rem; border-width: 2px; }
+:root.retro-pixel .toggle { border-width: 2px; }
+:root.retro-pixel .toggle__slider { border-radius: 0; }
+:root.retro-pixel .theme-switcher { border: 2px solid var(--border); padding: 2px; }
+:root.retro-pixel .kbd { border-width: 2px; border-radius: 0; font-size: 1.1rem; }
+:root.retro-pixel .toast { border: 2px solid var(--accent); box-shadow: 4px 4px 0 var(--accent-dark); font-size: 1.2rem; }
+:root.retro-pixel .back-to-top { border-radius: 0; border: 2px solid var(--text-primary); box-shadow: 3px 3px 0 var(--accent-dark); }
+:root.retro-pixel .game-player__bar { border-bottom: 2px solid var(--accent); }
+:root.retro-pixel .game-player__title { font-family: var(--font-display); font-size: 0.65rem; }
+:root.retro-pixel ::-webkit-scrollbar { width: 12px; }
+:root.retro-pixel ::-webkit-scrollbar-thumb { border-radius: 0; background: var(--accent); border: 2px solid var(--bg-primary); }
+:root.retro-pixel ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+
+.settings-range { width: 150px; accent-color: var(--accent); cursor: pointer; }
+.retro-value { margin-left: 6px; color: var(--accent-light); font-weight: 700; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root.retro body::before { animation: none; display: none; }
+  :root.retro-pixel .hero__badge::before { animation: none; }
+}
+@media (max-width: 480px) {
+  :root.retro-pixel .hero__title { font-size: 1.15rem; }
+  :root.retro-pixel .btn, :root.retro-pixel .category { font-size: 0.55rem; }
+  .settings-range { width: 110px; }
+}
+
   </style>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
 </head>
@@ -688,7 +840,7 @@ input, select { font: inherit; }
   <!-- Navigation -->
   <nav class="nav">
     <div class="nav__inner">
-      <a href="/" class="nav__logo" id="homeLink">
+      <a href="#" class="nav__logo" id="homeLink">
         <span class="nav__logo-icon">🎮</span>
         <span class="nav__logo-text">Bedrock<span class="nav__logo-accent">Games</span></span>
       </a>
@@ -777,6 +929,13 @@ input, select { font: inherit; }
                 System
               </button>
             </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <span class="settings-row__label">Retro Level <span id="retroValue" class="retro-value">70%</span></span>
+              <span class="settings-row__desc">Pixel fonts, scanlines and arcade colors. 0% is the clean look.</span>
+            </div>
+            <input type="range" class="settings-range" id="retroRange" min="0" max="100" step="10" value="70" aria-label="Retro level">
           </div>
         </div>
 
@@ -1074,7 +1233,7 @@ input, select { font: inherit; }
     <div class="footer__inner">
       <div class="footer__top">
         <div class="footer__brand">
-          <a href="/" class="nav__logo">
+          <a href="#" class="nav__logo">
             <span class="nav__logo-icon">🎮</span>
             <span class="nav__logo-text">Bedrock<span class="nav__logo-accent">Games</span></span>
           </a>
@@ -2739,6 +2898,7 @@ const GAME_SOURCES = {
     tabIcon:  load('tabIcon', ''),
     panicKey: load('panicKey', '`'),
     panicUrl: load('panicUrl', 'https://classroom.google.com'),
+    retro:    load('retro', 70),
   };
 
   // ─── Favorites & History ───
@@ -2770,7 +2930,7 @@ const GAME_SOURCES = {
     if (typeof GAME_SOURCES !== 'undefined' && GAME_SOURCES[game.id]) {
       return GAME_SOURCES[game.id];
     }
-    return game.path + '?embed=1';
+    return game.path + 'index.html?embed=1';
   }
 
   // ─── Toast ───
@@ -2803,6 +2963,18 @@ const GAME_SOURCES = {
   }
   applyTheme();
 
+  // ─── Retro level ───
+  function applyRetro() {
+    const v = Math.max(0, Math.min(100, Number(settings.retro) || 0));
+    root.style.setProperty('--retro', v / 100);
+    root.classList.toggle('retro', v > 0);
+    root.classList.toggle('retro-pixel', v >= 40);
+    const range = $('#retroRange'), label = $('#retroValue');
+    if (range) range.value = v;
+    if (label) label.textContent = v + '%';
+  }
+  applyRetro();
+
   // ─── Tab cloaking ───
   function applyTabCloak() {
     if (settings.tabTitle) document.title = settings.tabTitle;
@@ -2817,38 +2989,60 @@ const GAME_SOURCES = {
   }
   applyTabCloak();
 
-  function openInBlank() {
-    const url = window.location.href;
-    const win = window.open('about:blank', '_blank');
-    if (!win) return;
-    const iframe = win.document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:none;margin:0;padding:0;';
-    iframe.src = url;
-    win.document.body.style.margin = '0';
-    win.document.body.appendChild(iframe);
-    if (settings.tabTitle) win.document.title = settings.tabTitle;
-    else win.document.title = 'Google Docs';
-    if (settings.tabIcon && ICONS[settings.tabIcon]) {
-      const fav = win.document.createElement('link');
-      fav.rel = 'icon';
-      fav.href = ICONS[settings.tabIcon];
-      win.document.head.appendChild(fav);
-    }
-    window.location.replace(settings.panicUrl || 'https://classroom.google.com');
+  function goPanic() {
+    const url = settings.panicUrl || 'https://classroom.google.com';
+    try { window.top.location.replace(url); } catch { window.location.replace(url); }
   }
 
+  function openInBlank(quiet) {
+    const win = window.open('about:blank', '_blank');
+    if (!win) {
+      if (quiet !== true) showToast('Pop-up blocked. Allow pop-ups for this site and try again.');
+      return false;
+    }
+    const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    const title = settings.tabTitle || 'Google Docs';
+    const icon = settings.tabIcon && ICONS[settings.tabIcon] ? ICONS[settings.tabIcon] : '';
+    const src = window.location.href.split('#')[0];
+    try {
+      win.document.open();
+      win.document.write(
+        '<!doctype html><html><head><meta charset="utf-8">' +
+        '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+        '<title>' + esc(title) + '</title>' +
+        (icon ? '<link rel="icon" href="' + esc(icon) + '">' : '') +
+        '<style>html,body{margin:0;height:100%;background:#0a0a0f;overflow:hidden}' +
+        'iframe{position:fixed;inset:0;width:100%;height:100%;border:0}</style></head><body>' +
+        '<iframe src="' + esc(src) + '" allow="fullscreen; autoplay; gamepad; pointer-lock; clipboard-write" allowfullscreen></iframe>' +
+        '</body></html>'
+      );
+      win.document.close();
+    } catch {
+      win.close();
+      showToast('Could not open about:blank in this browser.');
+      return false;
+    }
+    try { sessionStorage.setItem('bg-cloaked', '1'); } catch {}
+    window.location.replace(settings.panicUrl || 'https://classroom.google.com');
+    return true;
+  }
+
+  // Auto-cloak: popups need a user gesture, so retry on the first click if the browser blocked the load-time attempt.
   if (settings.cloak && window.self === window.top && !sessionStorage.getItem('bg-cloaked')) {
-    sessionStorage.setItem('bg-cloaked', '1');
-    openInBlank();
+    if (!openInBlank(true)) {
+      showToast('Tap anywhere to open in about:blank');
+      document.addEventListener('click', function once() {
+        document.removeEventListener('click', once, true);
+        openInBlank();
+      }, true);
+    }
   }
 
   // ─── Panic key ───
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
     if ($('#gamePlayer').classList.contains('open')) return;
-    if (e.key === settings.panicKey) {
-      window.location.replace(settings.panicUrl || 'https://classroom.google.com');
-    }
+    if (e.key === settings.panicKey) goPanic();
   });
 
   // ─── Game Player (fullscreen) ───
@@ -3164,6 +3358,7 @@ const GAME_SOURCES = {
     $('#tabIconSelect').value = settings.tabIcon;
     $('#panicKeyDisplay').textContent = settings.panicKey === ' ' ? 'Space' : settings.panicKey;
     $('#panicUrlInput').value = settings.panicUrl;
+    applyRetro();
   }
 
   $$('.theme-opt').forEach(btn => {
@@ -3219,6 +3414,12 @@ const GAME_SOURCES = {
     save('panicUrl', settings.panicUrl);
   });
 
+  $('#retroRange').addEventListener('input', function () {
+    settings.retro = Number(this.value);
+    save('retro', settings.retro);
+    applyRetro();
+  });
+
   $('#launchBlank').addEventListener('click', openInBlank);
 
   // ─── Clear favorites & history ───
@@ -3245,10 +3446,11 @@ const GAME_SOURCES = {
       Object.keys(localStorage).forEach(k => { if (k.startsWith('bg-')) localStorage.removeItem(k); });
     } catch {}
     sessionStorage.removeItem('bg-cloaked');
-    settings = { theme: 'system', cloak: false, tabTitle: '', tabIcon: '', panicKey: '`', panicUrl: 'https://classroom.google.com' };
+    settings = { theme: 'system', cloak: false, tabTitle: '', tabIcon: '', panicKey: '`', panicUrl: 'https://classroom.google.com', retro: 70 };
     favorites = [];
     recentlyPlayed = [];
     applyTheme();
+    applyRetro();
     applyTabCloak();
     syncSettingsUI();
     renderFavorites();

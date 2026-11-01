@@ -1,3 +1,4 @@
+(function () {
 /**
  * Tetris — original implementation.
  * Seven-bag queue, hold, ghost piece, wall kicks, levels and scoring.
@@ -22,7 +23,7 @@ const SHAPES = {
   Z: { color: '#f43f5e', cells: [[1, 1, 0], [0, 1, 1]], size: 3 },
 };
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
 
@@ -450,3 +451,6 @@ export default function createGame(api) {
     restart() { reset(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['tetris'] = createGame;
+})();

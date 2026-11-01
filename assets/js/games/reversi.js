@@ -1,3 +1,4 @@
+(function () {
 /**
  * Reversi / Othello — original implementation.
  * Legal-move flipping, pass handling, a weighted minimax CPU and local 2P.
@@ -11,7 +12,7 @@ const BX = (W - BOARD) / 2;
 const BY = 92;
 const DIRS = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
   api.setScore(0, 'Wins');
@@ -388,3 +389,6 @@ export default function createGame(api) {
     restart() { resetBoard(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['reversi'] = createGame;
+})();

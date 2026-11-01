@@ -1,3 +1,4 @@
+(function () {
 /**
  * Minesweeper — original implementation.
  * First-click safety, flood fill, flags, chording, three difficulties.
@@ -18,7 +19,7 @@ const formatTime = (seconds) => {
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 };
 
-export default function createGame(api) {
+function createGame(api) {
   const wrap = document.createElement('div');
   wrap.className = 'ms-wrap';
   wrap.innerHTML = `
@@ -321,3 +322,6 @@ export default function createGame(api) {
     restart() { newBoard(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['minesweeper'] = createGame;
+})();

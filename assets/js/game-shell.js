@@ -1,3 +1,4 @@
+(function () {
 /**
  * Shared game shell: HUD, overlays, pause, sound, fullscreen, high scores
  * and a pause-aware requestAnimationFrame loop.
@@ -35,7 +36,7 @@ function formatNumber(value) {
   return Math.round(value).toLocaleString('en-US');
 }
 
-export function initGame({ slug, name, createGame, tagline = '', controlsHint = '' }) {
+function initGame({ slug, name, createGame, tagline = '', controlsHint = '' }) {
   const shell = document.getElementById('gameShell');
   const stage = document.getElementById('gameStage');
   const area = document.getElementById('gameArea');
@@ -566,3 +567,6 @@ if (/[?&]embed=1/.test(location.search)) {
     if (++tries > 40) clearInterval(timer);
   }, 150);
 }
+
+window.UGG_initGame = initGame;
+})();

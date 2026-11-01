@@ -1,3 +1,4 @@
+(function () {
 /**
  * Asteroids — original arcade shooter.
  * Rotate, thrust, fire, split rocks and survive endless waves.
@@ -6,7 +7,7 @@
 const W = 720;
 const H = 520;
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
 
@@ -346,3 +347,6 @@ export default function createGame(api) {
     restart() { reset(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['asteroids'] = createGame;
+})();

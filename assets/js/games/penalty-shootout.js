@@ -1,3 +1,4 @@
+(function () {
 /**
  * Penalty Shootout — original football penalty game.
  * Aim, charge, beat the diving keeper, then defend your lead through five rounds.
@@ -8,7 +9,7 @@ const H = 640;
 const GOAL = { x: 86, y: 138, w: 308, h: 186 };
 const BALL_HOME = { x: W / 2, y: 552 };
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
 
@@ -492,3 +493,6 @@ export default function createGame(api) {
     restart() { reset(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['penalty-shootout'] = createGame;
+})();

@@ -1,3 +1,4 @@
+(function () {
 /**
  * Pac-Man — original HTML5 maze chase.
  * Tile-based movement, four ghosts with distinct targets, power pellets,
@@ -44,7 +45,7 @@ const DIRS = {
 
 const GHOST_COLORS = ['#ef4444', '#f9a8d4', '#22d3ee', '#fb923c'];
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
 
@@ -593,3 +594,6 @@ export default function createGame(api) {
     restart() { resetLevel(true); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['pac-man'] = createGame;
+})();

@@ -1,3 +1,4 @@
+(function () {
 /**
  * Snake — original implementation.
  * Grid-based movement, progressive speed, swipe + D-pad controls.
@@ -8,7 +9,7 @@ const CELL = 24;
 const W = GRID * CELL;
 const H = GRID * CELL;
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
 
@@ -238,3 +239,6 @@ export default function createGame(api) {
     restart() { reset(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['snake'] = createGame;
+})();

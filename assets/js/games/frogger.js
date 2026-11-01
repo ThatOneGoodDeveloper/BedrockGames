@@ -1,3 +1,4 @@
+(function () {
 /**
  * Frogger — original road-and-river arcade game.
  * Hop across traffic, ride logs and fill the five homes at the top.
@@ -14,7 +15,7 @@ const START_ROW = 15;
 const RIVER_ROWS = [2, 3, 4, 5, 6];
 const ROAD_ROWS = [8, 9, 10, 11, 12];
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
 
@@ -352,3 +353,6 @@ export default function createGame(api) {
     restart() { reset(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['frogger'] = createGame;
+})();

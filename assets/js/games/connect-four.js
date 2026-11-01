@@ -1,3 +1,4 @@
+(function () {
 /**
  * Connect Four — original implementation.
  *
@@ -16,7 +17,7 @@ const H = 610;
 const BOARD_X = (W - BOARD_W) / 2;
 const BOARD_Y = 132;
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
   api.setScore(0, 'Wins');
@@ -489,3 +490,6 @@ export default function createGame(api) {
     restart() { resetBoard(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['connect-four'] = createGame;
+})();

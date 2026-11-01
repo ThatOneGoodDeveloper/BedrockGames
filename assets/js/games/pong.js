@@ -1,3 +1,4 @@
+(function () {
 /**
  * Pong — original implementation.
  * Single-player AI or two-player, first to seven, keyboard and touch.
@@ -9,7 +10,7 @@ const PADDLE_W = 12;
 const PADDLE_H = 74;
 const WIN_SCORE = 7;
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
 
@@ -295,3 +296,6 @@ export default function createGame(api) {
     restart() { resetMatch(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['pong'] = createGame;
+})();

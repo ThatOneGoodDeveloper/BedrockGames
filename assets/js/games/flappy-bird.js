@@ -1,3 +1,4 @@
+(function () {
 /**
  * Flappy Bird — original implementation.
  * One-button physics, parallax sky, pipe scoring and medals.
@@ -9,7 +10,7 @@ const GROUND = 74;
 const BIRD_X = 96;
 const BIRD_R = 14;
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
 
@@ -314,3 +315,6 @@ export default function createGame(api) {
     restart() { reset(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['flappy-bird'] = createGame;
+})();

@@ -1,3 +1,4 @@
+(function () {
 /**
  * Tic-Tac-Toe — original implementation with a perfect minimax opponent.
  */
@@ -8,7 +9,7 @@ const LINES = [
   [0, 4, 8], [2, 4, 6],
 ];
 
-export default function createGame(api) {
+function createGame(api) {
   const wrap = document.createElement('div');
   wrap.className = 'tt-wrap';
   wrap.innerHTML = `
@@ -218,3 +219,6 @@ export default function createGame(api) {
     restart() { newRound(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['tic-tac-toe'] = createGame;
+})();

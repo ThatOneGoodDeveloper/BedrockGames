@@ -1,3 +1,4 @@
+(function () {
 /**
  * Breakout — original brick breaker.
  * Neon visuals, multi-hit bricks, three power-ups, particles and levels.
@@ -7,7 +8,7 @@ const W = 480;
 const H = 620;
 const PADDLE_Y = H - 42;
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
 
@@ -449,3 +450,6 @@ export default function createGame(api) {
     restart() { reset(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['breakout'] = createGame;
+})();

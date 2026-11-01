@@ -1,3 +1,4 @@
+(function () {
 /**
  * 2048 — original implementation.
  * DOM tiles with CSS transitions, undo, saved board and swipe controls.
@@ -18,7 +19,7 @@ const COLORS = {
   2048: ['#edc22e', '#ffffff'],
 };
 
-export default function createGame(api) {
+function createGame(api) {
   const wrap = document.createElement('div');
   wrap.className = 'g2048-wrap';
   wrap.innerHTML = `
@@ -343,3 +344,6 @@ export default function createGame(api) {
     },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['2048'] = createGame;
+})();

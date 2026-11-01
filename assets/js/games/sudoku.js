@@ -1,3 +1,4 @@
+(function () {
 /**
  * Sudoku — original generator and solver.
  * Unique-solution puzzles, notes, hints, mistakes and three difficulties.
@@ -135,7 +136,7 @@ function makePuzzle(targetClues) {
   return { puzzle, solution };
 }
 
-export default function createGame(api) {
+function createGame(api) {
   const wrap = document.createElement('div');
   wrap.className = 'su-wrap';
   wrap.innerHTML = `
@@ -407,3 +408,6 @@ export default function createGame(api) {
     restart() { newPuzzle(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['sudoku'] = createGame;
+})();

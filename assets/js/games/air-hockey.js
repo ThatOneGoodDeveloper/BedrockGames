@@ -1,3 +1,4 @@
+(function () {
 /**
  * Air Hockey — original 2D implementation.
  * Puck physics, paddle momentum, CPU defence and same-keyboard two-player.
@@ -19,7 +20,7 @@ const PADDLE_R = 38;
 const PUCK_R = 17;
 const WIN_SCORE = 7;
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
 
@@ -419,3 +420,6 @@ export default function createGame(api) {
     restart() { resetMatch(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['air-hockey'] = createGame;
+})();

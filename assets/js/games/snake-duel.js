@@ -1,3 +1,4 @@
+(function () {
 /**
  * Snake Duel — original 2-player snake battle.
  * WASD vs arrow keys on one keyboard, or two on-screen pads on touch.
@@ -10,7 +11,7 @@ const H = GRID * CELL + 92;
 const BX = 20;
 const BY = 72;
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
   api.setScore(0, 'Wins');
@@ -288,3 +289,6 @@ export default function createGame(api) {
     restart() { resetRound(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['snake-duel'] = createGame;
+})();

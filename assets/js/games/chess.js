@@ -1,9 +1,10 @@
+(function () {
 /**
  * Chess — full rules via the vendored chess.js library (BSD-2-Clause),
  * plus an original alpha-beta opponent, board UI and move history.
  */
 
-import { Chess } from '../vendor/chess.js';
+const Chess = window.UGG_Chess;
 
 const FILES = 'abcdefgh';
 const PIECES = {
@@ -12,7 +13,7 @@ const PIECES = {
 };
 const VALUES = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 };
 
-export default function createGame(api) {
+function createGame(api) {
   const wrap = document.createElement('div');
   wrap.className = 'ch-wrap';
   wrap.innerHTML = `
@@ -393,3 +394,6 @@ export default function createGame(api) {
     restart() { newGame(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['chess'] = createGame;
+})();

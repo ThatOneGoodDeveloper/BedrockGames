@@ -1,3 +1,4 @@
+(function () {
 /**
  * Sky Hopper — original endless vertical jumper.
  * Auto-bounce platforming, springs, moving platforms, monsters and height score.
@@ -6,7 +7,7 @@
 const W = 400;
 const H = 600;
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
 
@@ -333,3 +334,6 @@ export default function createGame(api) {
     restart() { reset(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['sky-hopper'] = createGame;
+})();

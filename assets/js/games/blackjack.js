@@ -1,3 +1,4 @@
+(function () {
 /**
  * Blackjack — original implementation using the Kenney CC0 playing cards.
  * Hit, stand or double against a dealer that stands on 17.
@@ -8,7 +9,7 @@ const RANKS = ['a', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'j', 'q', 'k']
 const RANK_LABEL = { a: 'Ace', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '10', j: 'Jack', q: 'Queen', k: 'King' };
 const BET = 10;
 
-export default function createGame(api) {
+function createGame(api) {
   const wrap = document.createElement('div');
   wrap.className = 'bj-wrap';
   wrap.innerHTML = `
@@ -230,3 +231,6 @@ export default function createGame(api) {
     restart() { dealRound(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['blackjack'] = createGame;
+})();

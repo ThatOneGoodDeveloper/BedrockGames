@@ -1,3 +1,4 @@
+(function () {
 /**
  * Space Invaders — original wave shooter.
  * Marching formation, destructible shields, UFO bonus and endless waves.
@@ -7,7 +8,7 @@ const W = 640;
 const H = 520;
 const PLAYER_Y = H - 42;
 
-export default function createGame(api) {
+function createGame(api) {
   const { ctx } = api.initCanvas(W, H);
   api.setBestMode('higher');
 
@@ -411,3 +412,6 @@ export default function createGame(api) {
     restart() { reset(); },
   };
 }
+
+(window.UGG_GAMES = window.UGG_GAMES || {})['space-invaders'] = createGame;
+})();
