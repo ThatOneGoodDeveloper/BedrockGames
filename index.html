@@ -7,6 +7,28 @@
   <meta name="description" content="Browser games you can play without installing anything.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%20viewBox%3D%220%200%208%208%22%20shape-rendering%3D%22crispEdges%22%20aria-hidden%3D%22true%22%3E%3Crect%20width%3D%228%22%20height%3D%228%22%20fill%3D%22%2310142e%22%2F%3E%3Crect%20x%3D%222%22%20y%3D%220%22%20width%3D%224%22%20height%3D%221%22%20fill%3D%22%23ff004d%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%226%22%20height%3D%221%22%20fill%3D%22%23ff004d%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%222%22%20width%3D%226%22%20height%3D%221%22%20fill%3D%22%23ff004d%22%2F%3E%3Crect%20x%3D%222%22%20y%3D%223%22%20width%3D%224%22%20height%3D%221%22%20fill%3D%22%23ff004d%22%2F%3E%3Crect%20x%3D%223%22%20y%3D%224%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23fff1e8%22%2F%3E%3Crect%20x%3D%223%22%20y%3D%225%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23fff1e8%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%226%22%20width%3D%228%22%20height%3D%221%22%20fill%3D%22%23fff1e8%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%227%22%20width%3D%228%22%20height%3D%221%22%20fill%3D%22%23fff1e8%22%2F%3E%3C%2Fsvg%3E">
   <script>
+    window.bgApplyAccent = function (hex, theme) {
+      var s = document.documentElement.style;
+      var props = ['--hi', '--hi-2', '--btn-bg', '--on-hi', '--btn-ink'];
+      if (!/^#[0-9a-f]{6}$/i.test(hex || '')) { props.forEach(function (p) { s.removeProperty(p); }); return; }
+      var rgb = function (h) { return [1, 3, 5].map(function (i) { return parseInt(h.substr(i, 2), 16); }); };
+      var lum = function (c) {
+        var w = [0.2126, 0.7152, 0.0722];
+        return c.reduce(function (a, v, i) { v /= 255; return a + w[i] * (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)); }, 0);
+      };
+      var ratio = function (a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+      var mix = function (c, t, a) { return c.map(function (v, i) { return v + (t[i] - v) * a; }); };
+      var toHex = function (c) { return '#' + c.map(function (v) { return ('0' + Math.round(v).toString(16)).slice(-2); }).join(''); };
+      var c = rgb(hex), bg = rgb(theme === 'light' ? '#9bbc0f' : '#10142e');
+      var ink = ratio(c, [0, 0, 0]) >= ratio(c, [255, 241, 232]) ? '#000000' : '#fff1e8';
+      var text = c, toward = theme === 'light' ? [0, 0, 0] : [255, 255, 255];
+      for (var a = 0; a <= 1 && ratio(text, bg) < 3.5; a += 0.05) text = mix(c, toward, a);
+      s.setProperty('--hi', hex);
+      s.setProperty('--btn-bg', hex);
+      s.setProperty('--on-hi', ink);
+      s.setProperty('--btn-ink', ink);
+      s.setProperty('--hi-2', toHex(text));
+    };
     (function () {
       try {
         var r = document.documentElement, g = function (k, d) { var v = localStorage.getItem('bg-' + k); return v === null ? d : JSON.parse(v); };
@@ -14,6 +36,7 @@
         if (t === 'system') t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
         r.setAttribute('data-theme', t);
         if (g('crt', false)) r.classList.add('crt');
+        window.bgApplyAccent(g('accent', ''), t);
       } catch (e) {}
     })();
   </script>
@@ -438,6 +461,15 @@ body::before { display: none; }
 
 .footer__build { margin-left: 12px; color: var(--muted); font-size: 12px; }
 
+/* ---------- Accent picker ---------- */
+.accent-picker { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end; max-width: 300px; }
+.swatch { width: 30px; height: 30px; background: var(--sw, var(--bg)); border: var(--bw) solid var(--line); }
+.swatch:hover { border-color: var(--ink); }
+.swatch[aria-pressed="true"] { outline: 3px solid var(--ink); outline-offset: 2px; }
+.swatch--auto { width: auto; padding: 0 8px; font-family: var(--font); font-size: 9px; color: var(--ink); }
+#accentCustom { width: 38px; height: 30px; padding: 0; background: var(--bg); border: var(--bw) solid var(--line); cursor: pointer; }
+@media (max-width: 768px) { .accent-picker { justify-content: flex-start; max-width: none; } }
+
   </style>
 </head>
 <body>
@@ -666,6 +698,23 @@ body::before { display: none; }
           </div>
           <div class="settings-row">
             <div class="settings-row__info">
+              <span class="settings-row__label">Accent color</span>
+              <span class="settings-row__desc">Colors the active tab, buttons and highlights</span>
+            </div>
+            <div class="accent-picker" id="accentPicker">
+              <button class="swatch swatch--auto" data-accent="" aria-pressed="true" title="Theme default">Auto</button>
+              <button class="swatch" data-accent="#ff004d" style="--sw:#ff004d" aria-pressed="false" aria-label="Red" title="Red"></button>
+              <button class="swatch" data-accent="#ffa300" style="--sw:#ffa300" aria-pressed="false" aria-label="Orange" title="Orange"></button>
+              <button class="swatch" data-accent="#ffec27" style="--sw:#ffec27" aria-pressed="false" aria-label="Yellow" title="Yellow"></button>
+              <button class="swatch" data-accent="#00e436" style="--sw:#00e436" aria-pressed="false" aria-label="Green" title="Green"></button>
+              <button class="swatch" data-accent="#29adff" style="--sw:#29adff" aria-pressed="false" aria-label="Blue" title="Blue"></button>
+              <button class="swatch" data-accent="#a259ff" style="--sw:#a259ff" aria-pressed="false" aria-label="Purple" title="Purple"></button>
+              <button class="swatch" data-accent="#ff77a8" style="--sw:#ff77a8" aria-pressed="false" aria-label="Pink" title="Pink"></button>
+              <input type="color" id="accentCustom" value="#ff004d" aria-label="Pick a custom accent color" title="Custom color">
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info">
               <span class="settings-row__label">Scanlines</span>
               <span class="settings-row__desc">CRT lines over the page</span>
             </div>
@@ -805,7 +854,7 @@ body::before { display: none; }
 
   <footer class="footer">
     <div class="footer__inner">
-      <span>Bedrock Games &copy; 2026 <span class="footer__build">Build 2026-11-01 22:17 UTC</span></span>
+      <span>Bedrock Games &copy; 2026 <span class="footer__build">Build 2026-11-01 22:29 UTC</span></span>
       <nav class="footer__links">
         <a href="#" data-view="games">Games</a>
         <a href="#" data-view="links">Links</a>
@@ -2419,7 +2468,7 @@ const GAME_SOURCES = {
   const $ = (sel, ctx) => (ctx || document).querySelector(sel);
   const $$ = (sel, ctx) => [...(ctx || document).querySelectorAll(sel)];
   const root = document.documentElement;
-  const BUILD = '2026-11-01 22:17 UTC';
+  const BUILD = '2026-11-01 22:29 UTC';
   const FAVICON = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%20viewBox%3D%220%200%208%208%22%20shape-rendering%3D%22crispEdges%22%20aria-hidden%3D%22true%22%3E%3Crect%20width%3D%228%22%20height%3D%228%22%20fill%3D%22%2310142e%22%2F%3E%3Crect%20x%3D%222%22%20y%3D%220%22%20width%3D%224%22%20height%3D%221%22%20fill%3D%22%23ff004d%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%226%22%20height%3D%221%22%20fill%3D%22%23ff004d%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%222%22%20width%3D%226%22%20height%3D%221%22%20fill%3D%22%23ff004d%22%2F%3E%3Crect%20x%3D%222%22%20y%3D%223%22%20width%3D%224%22%20height%3D%221%22%20fill%3D%22%23ff004d%22%2F%3E%3Crect%20x%3D%223%22%20y%3D%224%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23fff1e8%22%2F%3E%3Crect%20x%3D%223%22%20y%3D%225%22%20width%3D%222%22%20height%3D%221%22%20fill%3D%22%23fff1e8%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%226%22%20width%3D%228%22%20height%3D%221%22%20fill%3D%22%23fff1e8%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%227%22%20width%3D%228%22%20height%3D%221%22%20fill%3D%22%23fff1e8%22%2F%3E%3C%2Fsvg%3E';
   const HEART_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true"><rect x="1" y="0" width="2" height="1" fill="var(--hi)"/><rect x="5" y="0" width="2" height="1" fill="var(--hi)"/><rect x="0" y="1" width="8" height="1" fill="var(--hi)"/><rect x="0" y="2" width="8" height="1" fill="var(--hi)"/><rect x="0" y="3" width="8" height="1" fill="var(--hi)"/><rect x="1" y="4" width="6" height="1" fill="var(--hi)"/><rect x="2" y="5" width="4" height="1" fill="var(--hi)"/><rect x="3" y="6" width="2" height="1" fill="var(--hi)"/></svg>';
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -2446,7 +2495,7 @@ const GAME_SOURCES = {
   const DEFAULTS = {
     theme: 'system', cloak: false, tabTitle: '', tabIcon: '',
     panicKey: '`', panicUrl: 'https://classroom.google.com', crt: false, autoFs: true,
-    proxyEngine: 'uv', searchEngine: 'duckduckgo', wispUrl: '',
+    proxyEngine: 'uv', searchEngine: 'duckduckgo', wispUrl: '', accent: '',
   };
   let settings = {};
   Object.keys(DEFAULTS).forEach(k => { settings[k] = load(k, DEFAULTS[k]); });
@@ -2524,7 +2573,18 @@ const GAME_SOURCES = {
       ? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
       : settings.theme;
     root.setAttribute('data-theme', resolved);
+    applyAccent();
     $$('.theme-opt').forEach(btn => btn.classList.toggle('active', btn.dataset.themeVal === settings.theme));
+  }
+  function applyAccent() {
+    const valid = /^#[0-9a-f]{6}$/i.test(settings.accent || '');
+    if (window.bgApplyAccent) window.bgApplyAccent(valid ? settings.accent : '', root.getAttribute('data-theme'));
+    $$('.swatch').forEach(b => {
+      const mine = (b.dataset.accent || '').toLowerCase();
+      b.setAttribute('aria-pressed', String(mine === (valid ? settings.accent.toLowerCase() : '')));
+    });
+    const custom = $('#accentCustom');
+    if (custom && valid) custom.value = settings.accent.toLowerCase();
   }
   function applyCrt() {
     root.classList.toggle('crt', !!settings.crt);
@@ -3030,6 +3090,19 @@ const GAME_SOURCES = {
   bindToggle('#crtToggle', 'crt', applyCrt);
   bindToggle('#cloakToggle', 'cloak');
   bindToggle('#autoFsToggle', 'autoFs');
+
+  $('#accentPicker').addEventListener('click', e => {
+    const btn = e.target.closest('.swatch');
+    if (!btn) return;
+    settings.accent = btn.dataset.accent;
+    save('accent', settings.accent);
+    applyAccent();
+  });
+  $('#accentCustom').addEventListener('input', function () {
+    settings.accent = this.value;
+    save('accent', settings.accent);
+    applyAccent();
+  });
 
   $('#tabTitleInput').addEventListener('input', function () {
     settings.tabTitle = this.value; save('tabTitle', settings.tabTitle); applyTabCloak();
