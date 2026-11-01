@@ -1,6 +1,6 @@
 // Serves this site and a Wisp endpoint at /wisp/ for the Browser tab.
 //   npm install && npm start   ->  http://localhost:8080
-// Env: PORT, HOST (default 127.0.0.1), ALLOWED_ORIGINS (comma list; default any),
+// Env: PORT, HOST (default 127.0.0.1, or 0.0.0.0 when PORT is set by a host), ALLOWED_ORIGINS (comma list; default any),
 //      ALLOW_PRIVATE=1 lets the proxy reach private/loopback addresses.
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
@@ -10,7 +10,7 @@ import { server as wisp, logging } from '@mercuryworkshop/wisp-js/server';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const port = Number(process.env.PORT) || 8080;
-const host = process.env.HOST || '127.0.0.1';
+const host = process.env.HOST || (process.env.PORT ? '0.0.0.0' : '127.0.0.1');
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
 const allowPrivate = process.env.ALLOW_PRIVATE === '1';
 
