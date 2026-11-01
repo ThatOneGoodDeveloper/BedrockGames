@@ -51,7 +51,11 @@ server.on('upgrade', (req, socket, head) => {
   const path = new URL(req.url, 'http://x').pathname;
   const origin = req.headers.origin;
   if (path !== '/wisp/' && path !== '/wisp') return socket.destroy();
-  if (allowedOrigins.length && !allowedOrigins.includes(origin)) return socket.destroy();
+  if (allowedOrigins.length) {
+    let sameHost = false;
+    try { sameHost = !!origin && new URL(origin).host === req.headers.host; } catch {}
+    if (!sameHost && !allowedOrigins.includes(origin)) return socket.destroy();
+  }
   wisp.routeRequest(req, socket, head);
 });
 server.listen(port, host, () => console.log(`Bedrock Games running at http://${host === '0.0.0.0' ? 'localhost' : host}:${port}`));
