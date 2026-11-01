@@ -1,0 +1,16 @@
+{
+  "name": "bedrock-games",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Bedrock Games with a local Wisp server for the Browser tab",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@mercuryworkshop/wisp-js": "0.5.2"
+  }
+}

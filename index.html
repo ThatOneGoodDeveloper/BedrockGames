@@ -349,6 +349,32 @@ select { cursor: var(--cursor); }
   .toolbar__search { max-width: none; }
 }
 
+/* ---------- Browser tab ---------- */
+.addressbar { display: flex; gap: 14px; margin-bottom: 16px; }
+.addressbar__input { flex: 1; min-width: 0; height: 52px; padding: 0 14px; background: var(--bg); border: var(--bw) solid var(--line); font-size: var(--fs-sm); outline: none; }
+.addressbar__input:focus { border-color: var(--hi-2); }
+.browser-status { min-height: 36px; margin-bottom: 20px; font-size: var(--fs-xs); line-height: 1.9; text-transform: uppercase; color: var(--muted); word-break: break-word; }
+.browser-status[data-kind="error"] { color: var(--hi); }
+.browser-status[data-kind="ok"] { color: var(--ok); }
+.browser-stage { display: flex; flex-direction: column; height: min(72vh, 780px); margin-bottom: 32px; background: #000; border: var(--bw) solid var(--line); box-shadow: 6px 6px 0 var(--shadow); }
+.browser-stage[hidden] { display: none; }
+.browser-stage__bar { display: flex; align-items: center; gap: 8px; padding: 8px; background: var(--panel); border-bottom: var(--bw) solid var(--line); flex-shrink: 0; }
+.browser-stage__url { flex: 1; min-width: 0; padding: 0 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-xs); color: var(--muted); }
+.browser-stage__frame { flex: 1; width: 100%; border: 0; background: #fff; }
+.browser-stage:fullscreen { height: 100%; border: 0; box-shadow: none; }
+.browser-stage:-webkit-full-screen { height: 100%; border: 0; box-shadow: none; }
+.quick { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 36px; padding-right: 6px; }
+.bulk--help { margin: 28px 0 0; padding: 16px; background: var(--panel); border: var(--bw) solid var(--line); }
+.bulk--help p { margin-top: 14px; line-height: 2; color: var(--muted); text-transform: none; }
+.bulk--help code { padding: 1px 6px; background: var(--bg); border: 2px solid var(--line); color: var(--ink); }
+@media (max-width: 768px) {
+  .addressbar { flex-wrap: wrap; }
+  .addressbar .btn { flex: 1; }
+  .browser-stage { height: 70vh; }
+  .browser-stage__url { display: none; }
+  .browser-stage__bar .game-player__btn:nth-last-child(2), .browser-stage__bar .game-player__btn:last-child { margin-left: auto; }
+}
+
   </style>
 </head>
 <body>
@@ -368,6 +394,7 @@ select { cursor: var(--cursor); }
     <div class="menubar" role="tablist" aria-label="Sections">
       <button class="menubar__btn menubar__btn--active" data-view="games" role="tab" aria-selected="true">Games</button>
       <button class="menubar__btn" data-view="links" role="tab" aria-selected="false">Links</button>
+      <button class="menubar__btn" data-view="browser" role="tab" aria-selected="false">Browser</button>
       <button class="menubar__btn" data-view="options" role="tab" aria-selected="false">Options</button>
     </div>
     <div class="nav__mobile-search" id="mobileSearchBar">
@@ -471,7 +498,8 @@ select { cursor: var(--cursor); }
         <div class="help__row"><dt>Save</dt><dd>Adds the game to Favorites. Your last games show up under Continue.</dd></div>
         <div class="help__row"><dt>Dice</dt><dd>Opens a random game.</dd></div>
         <div class="help__row"><dt><kbd class="kbd">/</kbd></dt><dd>Jumps to search.</dd></div>
-        <div class="help__row"><dt><kbd class="kbd">1</kbd> <kbd class="kbd">2</kbd> <kbd class="kbd">3</kbd></dt><dd>Switches between Games, Links and Options.</dd></div>
+        <div class="help__row"><dt><kbd class="kbd">1</kbd> <kbd class="kbd">2</kbd> <kbd class="kbd">3</kbd> <kbd class="kbd">4</kbd></dt><dd>Switches between Games, Links, Browser and Options.</dd></div>
+        <div class="help__row"><dt>Browser</dt><dd>Opens any website through a proxy. It needs a Wisp server, and the tab explains how to set one up.</dd></div>
         <div class="help__row"><dt>Links</dt><dd>Mirror links for every game, plus your own list. Paste in as many as you like.</dd></div>
         <div class="help__row"><dt>Panic key <kbd class="kbd" id="helpPanicKey">`</kbd></dt><dd>Jumps to the panic page. Change both in Options.</dd></div>
         <div class="help__row"><dt>Options</dt><dd>Theme, scanlines, about:blank, tab title and icon, auto fullscreen, and a backup file.</dd></div>
@@ -479,6 +507,80 @@ select { cursor: var(--cursor); }
     </div>
   </section>
   </div>
+
+  <section class="view section section--first" id="view-browser" hidden>
+    <div class="section__inner">
+      <div class="section__header">
+        <h2 class="section__title">Browser</h2>
+        <p class="section__subtitle">Open a site through the proxy</p>
+      </div>
+      <form class="addressbar" id="browserForm" autocomplete="off">
+        <input type="text" class="addressbar__input" id="browserInput" placeholder="Search or type an address" aria-label="Search or web address" spellcheck="false" autocapitalize="off" autocorrect="off">
+        <button type="submit" class="btn btn--primary">Go</button>
+      </form>
+      <p class="browser-status" id="browserStatus" role="status"></p>
+      <div class="browser-stage" id="browserStage" hidden>
+        <div class="browser-stage__bar">
+          <button class="game-player__btn" id="bBack" aria-label="Back">&lt;</button>
+          <button class="game-player__btn" id="bFwd" aria-label="Forward">&gt;</button>
+          <button class="game-player__btn" id="bReload">Reload</button>
+          <span class="browser-stage__url" id="bUrl"></span>
+          <button class="game-player__btn" id="bFull">Full</button>
+          <button class="game-player__btn" id="bClose">Close</button>
+        </div>
+        <iframe class="browser-stage__frame" id="browserFrame" title="Proxied page" allow="fullscreen; autoplay; clipboard-write; gamepad" allowfullscreen></iframe>
+      </div>
+      <div class="quick" id="quickSites">
+        <button class="category" data-site="duckduckgo.com">DuckDuckGo</button>
+        <button class="category" data-site="wikipedia.org">Wikipedia</button>
+        <button class="category" data-site="youtube.com">YouTube</button>
+        <button class="category" data-site="reddit.com">Reddit</button>
+        <button class="category" data-site="github.com">GitHub</button>
+        <button class="category" data-site="archive.org">Archive</button>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group__header"><h3>Proxy</h3></div>
+        <div class="settings-row">
+          <div class="settings-row__info">
+            <span class="settings-row__label">Engine</span>
+            <span class="settings-row__desc">Ultraviolet is the safe pick. Scramjet is newer and handles more sites.</span>
+          </div>
+          <select class="settings-select" id="proxyEngine" aria-label="Proxy engine">
+            <option value="uv">Ultraviolet</option>
+            <option value="sj">Scramjet</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row__info">
+            <span class="settings-row__label">Search</span>
+            <span class="settings-row__desc">Used when you type words instead of an address</span>
+          </div>
+          <select class="settings-select" id="searchEngine" aria-label="Search engine">
+            <option value="duckduckgo">DuckDuckGo</option>
+            <option value="google">Google</option>
+            <option value="bing">Bing</option>
+            <option value="brave">Brave</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row__info">
+            <span class="settings-row__label">Wisp server</span>
+            <span class="settings-row__desc">Leave empty to use this site's own server</span>
+          </div>
+          <div class="panic-key-row">
+            <input type="text" class="settings-input" id="wispInput" placeholder="wss://example.com/wisp/" aria-label="Wisp server address" spellcheck="false" autocapitalize="off">
+            <button class="btn btn--sm" id="wispTest" type="button">Test</button>
+          </div>
+        </div>
+      </div>
+      <details class="bulk bulk--help">
+        <summary>Set up a Wisp server</summary>
+        <p>The proxy needs a Wisp server because browsers cannot open raw connections. GitHub Pages cannot run one. Pick either:</p>
+        <p>1. Run it yourself. Unzip the site, then run <code>npm install</code> and <code>npm start</code>, and open <code>http://localhost:8080</code>. Nothing else to set up.</p>
+        <p>2. Host <code>server.js</code> on any Node host, then paste its address above, ending in <code>/wisp/</code>. Set <code>ALLOWED_ORIGINS</code> to your site's address so strangers cannot use it.</p>
+      </details>
+    </div>
+  </section>
 
   <section class="view section section--first" id="view-options" hidden>
     <div class="section__inner">
@@ -642,6 +744,7 @@ select { cursor: var(--cursor); }
       <nav class="footer__links">
         <a href="#" data-view="games">Games</a>
         <a href="#" data-view="links">Links</a>
+        <a href="#" data-view="browser">Browser</a>
         <a href="#" data-cat-link="action">Action</a>
         <a href="#" data-cat-link="puzzle">Puzzle</a>
         <a href="#" data-cat-link="racing">Racing</a>
@@ -2277,6 +2380,7 @@ const GAME_SOURCES = {
   const DEFAULTS = {
     theme: 'system', cloak: false, tabTitle: '', tabIcon: '',
     panicKey: '`', panicUrl: 'https://classroom.google.com', crt: true, autoFs: true,
+    proxyEngine: 'uv', searchEngine: 'duckduckgo', wispUrl: '',
   };
   let settings = {};
   Object.keys(DEFAULTS).forEach(k => { settings[k] = load(k, DEFAULTS[k]); });
@@ -2420,7 +2524,7 @@ const GAME_SOURCES = {
   }
 
   // ─── Views (Games / Links / Options) ───
-  const VIEWS = ['games', 'links', 'options'];
+  const VIEWS = ['games', 'links', 'browser', 'options'];
   let currentView = 'games';
 
   function showView(name, opts) {
@@ -2434,6 +2538,7 @@ const GAME_SOURCES = {
     });
     if (name === 'options') syncSettingsUI();
     if (name === 'links') renderLinks(true);
+    if (name === 'browser') syncBrowserUI();
     try { history.replaceState(null, '', name === 'games' ? location.pathname + location.search : '#/' + name); } catch {}
     if (!(opts && opts.keepScroll)) window.scrollTo({ top: 0 });
   }
@@ -2966,6 +3071,228 @@ const GAME_SOURCES = {
     reader.readAsText(file);
   });
 
+  // ─── Browser (proxy) ───
+  // Ultraviolet or Scramjet rewrite pages in a service worker; bare-mux sends their traffic
+  // through libcurl over a Wisp WebSocket server.
+  const PROXY_DIR = new URL('proxy/', location.href.split('#')[0].split('?')[0]).href;
+  const SEARCH_URLS = {
+    duckduckgo: 'https://duckduckgo.com/?q=%s',
+    google: 'https://www.google.com/search?q=%s',
+    bing: 'https://www.bing.com/search?q=%s',
+    brave: 'https://search.brave.com/search?q=%s',
+  };
+  const browserInput = $('#browserInput');
+  const browserFrame = $('#browserFrame');
+  const browserStage = $('#browserStage');
+  const browserStatus = $('#browserStatus');
+  const proxyState = { conn: null, wisp: '', uv: false, sj: null, sjFrame: null, current: '' };
+  const canProxy = window.isSecureContext && 'serviceWorker' in navigator && /^https?:$/.test(location.protocol);
+  const scriptCache = {};
+
+  function setStatus(msg, kind) {
+    browserStatus.textContent = msg;
+    browserStatus.dataset.kind = kind || '';
+  }
+
+  function loadScript(src) {
+    if (!scriptCache[src]) {
+      scriptCache[src] = new Promise((resolve, reject) => {
+        const el = document.createElement('script');
+        el.src = src;
+        el.onload = resolve;
+        el.onerror = () => { delete scriptCache[src]; reject(new Error('Could not load ' + src.replace(PROXY_DIR, 'proxy/'))); };
+        document.head.appendChild(el);
+      });
+    }
+    return scriptCache[src];
+  }
+
+  function wispUrl() {
+    let u = (settings.wispUrl || '').trim();
+    const secure = location.protocol === 'https:';
+    if (!u) return (secure ? 'wss:' : 'ws:') + '//' + location.host + '/wisp/';
+    u = u.replace(/^http:/i, 'ws:').replace(/^https:/i, 'wss:');
+    return /^wss?:\/\//i.test(u) ? u : (secure ? 'wss://' : 'ws://') + u;
+  }
+
+  function probeWisp(url) {
+    return new Promise(resolve => {
+      let ws, done = false;
+      const finish = ok => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        try { ws.close(); } catch {}
+        resolve(ok);
+      };
+      const timer = setTimeout(() => finish(false), 6000);
+      try { ws = new WebSocket(url); } catch { finish(false); return; }
+      ws.onopen = () => finish(true);
+      ws.onerror = () => finish(false);
+      ws.onclose = () => finish(false);
+    });
+  }
+
+  async function ensureTransport(wisp) {
+    if (!proxyState.conn) {
+      await loadScript(PROXY_DIR + 'baremux/index.js');
+      proxyState.conn = new BareMux.BareMuxConnection(PROXY_DIR + 'baremux/worker.js');
+    }
+    if (proxyState.wisp !== wisp) {
+      await proxyState.conn.setTransport(PROXY_DIR + 'libcurl/index.mjs', [{ wisp }]);
+      proxyState.wisp = wisp;
+    }
+  }
+
+  async function registerWorker(file, scope) {
+    const reg = await navigator.serviceWorker.register(PROXY_DIR + file, { scope: PROXY_DIR + scope });
+    const sw = reg.installing || reg.waiting;
+    if (sw && sw.state !== 'activated') {
+      await new Promise(resolve => {
+        const t = setTimeout(resolve, 10000);
+        sw.addEventListener('statechange', () => { if (sw.state === 'activated') { clearTimeout(t); resolve(); } });
+      });
+    }
+  }
+
+  async function ensureEngine(name) {
+    if (name === 'sj') {
+      if (proxyState.sj) return;
+      await loadScript(PROXY_DIR + 'scramjet/scramjet.all.js');
+      const { ScramjetController } = $scramjetLoadController();
+      const base = new URL(PROXY_DIR).pathname;
+      const sj = new ScramjetController({
+        prefix: base + 'sj/',
+        files: { wasm: base + 'scramjet/scramjet.wasm.wasm', all: base + 'scramjet/scramjet.all.js', sync: base + 'scramjet/scramjet.sync.js' },
+        flags: { rewriterLogs: false, scramitize: false, cleanErrors: true, sourcemaps: false },
+      });
+      await sj.init();
+      await registerWorker('sj-sw.js', 'sj/');
+      proxyState.sj = sj;
+      proxyState.sjFrame = sj.createFrame(browserFrame);
+    } else if (!proxyState.uv) {
+      await loadScript(PROXY_DIR + 'portal/uv.bundle.js');
+      await loadScript(PROXY_DIR + 'portal/uv.config.js');
+      await registerWorker('sw.js', 'uv/');
+      proxyState.uv = true;
+    }
+  }
+
+  function toUrl(input) {
+    const q = String(input || '').trim();
+    if (!q) return null;
+    if (/^https?:\/\//i.test(q)) return q;
+    if (!/\s/.test(q)) {
+      if (/^(localhost|\d{1,3}(\.\d{1,3}){3})(:\d+)?([/?#].*)?$/i.test(q)) return 'http://' + q;
+      if (/^[^\s/?#]+\.[a-z]{2,}(:\d+)?([/?#].*)?$/i.test(q)) return 'https://' + q;
+    }
+    return (SEARCH_URLS[settings.searchEngine] || SEARCH_URLS.duckduckgo).replace('%s', encodeURIComponent(q));
+  }
+
+  function navigateProxy(url) {
+    proxyState.current = url;
+    $('#bUrl').textContent = url;
+    if (settings.proxyEngine === 'sj') proxyState.sjFrame.go(url);
+    else browserFrame.src = window.__uv$config.prefix + window.__uv$config.encodeUrl(url);
+  }
+
+  async function browse(input) {
+    const url = toUrl(input);
+    if (!url) return;
+    browserInput.value = url;
+    if (!canProxy) { syncBrowserUI(); return; }
+    const wisp = wispUrl();
+    setStatus('Checking the Wisp server...');
+    if (!(await probeWisp(wisp))) {
+      setStatus('No Wisp server answered at ' + wisp + '. Open "Set up a Wisp server" below.', 'error');
+      return;
+    }
+    try {
+      setStatus('Starting the proxy...');
+      await ensureTransport(wisp);
+      await ensureEngine(settings.proxyEngine);
+      browserStage.hidden = false;
+      navigateProxy(url);
+      setStatus('Loading...', 'ok');
+    } catch (err) {
+      setStatus('Proxy error: ' + ((err && err.message) || err), 'error');
+    }
+  }
+
+  function syncBrowserUI() {
+    $('#proxyEngine').value = settings.proxyEngine;
+    $('#searchEngine').value = settings.searchEngine;
+    $('#wispInput').value = settings.wispUrl;
+    $('#wispInput').placeholder = wispUrl();
+    if (!canProxy) {
+      setStatus(location.protocol === 'file:'
+        ? 'The proxy cannot run from a file. Run "npm install" then "npm start" and open http://localhost:8080, or use the website.'
+        : 'The proxy needs https:// or localhost. Browsers block service workers on plain http:// addresses.', 'error');
+    } else if (browserStatus.dataset.kind === 'error' && /cannot run|needs https/.test(browserStatus.textContent)) {
+      setStatus('');
+    }
+  }
+
+  browserFrame.addEventListener('load', () => {
+    if (!proxyState.current) return;
+    let real = '';
+    try {
+      if (settings.proxyEngine === 'sj') real = proxyState.sjFrame.url.href;
+      else {
+        const cfg = window.__uv$config;
+        const href = browserFrame.contentWindow.location.href;
+        const i = href.indexOf(cfg.prefix);
+        if (i >= 0) real = cfg.decodeUrl(href.slice(i + cfg.prefix.length));
+      }
+    } catch {}
+    if (real) {
+      proxyState.current = real;
+      $('#bUrl').textContent = real;
+      if (document.activeElement !== browserInput) browserInput.value = real;
+    }
+    setStatus('');
+  });
+
+  $('#browserForm').addEventListener('submit', e => { e.preventDefault(); browse(browserInput.value); });
+  $$('[data-site]').forEach(btn => btn.addEventListener('click', () => browse(btn.dataset.site)));
+  $('#bBack').addEventListener('click', () => {
+    try { if (settings.proxyEngine === 'sj') proxyState.sjFrame.back(); else browserFrame.contentWindow.history.back(); } catch {}
+  });
+  $('#bFwd').addEventListener('click', () => {
+    try { if (settings.proxyEngine === 'sj') proxyState.sjFrame.forward(); else browserFrame.contentWindow.history.forward(); } catch {}
+  });
+  $('#bReload').addEventListener('click', () => {
+    try { if (settings.proxyEngine === 'sj') proxyState.sjFrame.reload(); else browserFrame.contentWindow.location.reload(); } catch {}
+  });
+  $('#bFull').addEventListener('click', () => {
+    if (fsElement()) exitFs(); else if (!enterFs(browserStage)) showToast('This browser cannot fullscreen');
+  });
+  $('#bClose').addEventListener('click', () => {
+    proxyState.current = '';
+    browserFrame.src = 'about:blank';
+    browserStage.hidden = true;
+    setStatus('');
+  });
+  $('#proxyEngine').addEventListener('change', function () {
+    settings.proxyEngine = this.value;
+    save('proxyEngine', settings.proxyEngine);
+    if (!browserStage.hidden && proxyState.current) browse(proxyState.current);
+  });
+  $('#searchEngine').addEventListener('change', function () {
+    settings.searchEngine = this.value;
+    save('searchEngine', settings.searchEngine);
+  });
+  $('#wispInput').addEventListener('input', function () {
+    settings.wispUrl = this.value.trim();
+    save('wispUrl', settings.wispUrl);
+  });
+  $('#wispTest').addEventListener('click', async () => {
+    const url = wispUrl();
+    setStatus('Testing ' + url + ' ...');
+    const ok = await probeWisp(url);
+    setStatus(ok ? 'Wisp server is reachable: ' + url : 'No Wisp server answered at ' + url, ok ? 'ok' : 'error');
+  });
+
   // ─── Keyboard ───
   document.addEventListener('keydown', e => {
     if (e.ctrlKey || e.metaKey || e.altKey || listeningForKey) return;
@@ -2975,7 +3302,8 @@ const GAME_SOURCES = {
     if (e.key === '/') { e.preventDefault(); showView('games'); searchInput.focus(); }
     else if (e.key === '1') showView('games');
     else if (e.key === '2') showView('links');
-    else if (e.key === '3') showView('options');
+    else if (e.key === '3') showView('browser');
+    else if (e.key === '4') showView('options');
   });
 
   // ─── Misc ───
