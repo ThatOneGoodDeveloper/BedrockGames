@@ -1,16 +1,16 @@
 # Bedrock Games
 
-A collection of 806 browser games with a built-in web browser, presented as a desktop in your browser: wallpaper, a menu bar with a clock, a dock, and draggable windows, styled after macOS Tahoe's frosted-glass look. All artwork and icons are original. No accounts, and no analytics or tracking scripts on this site's own pages.
+A collection of 806 browser games with a built-in web browser, presented as a desktop in your browser: a dithered wallpaper with a big clock, a menu bar, an icon strip, and draggable windows, styled after classic Mac OS (pinstriped title bars, pixel type, hard shadows). All artwork and icons are original pixel art. No accounts, and no analytics or tracking scripts on this site's own pages.
 
 **Live site:** https://thatonegooddeveloper.github.io/BedrockGames/
 
 ## What's in it
 
-- **Desktop.** Windows you can drag, resize, zoom (green), minimize to the dock (yellow) and close (red). A dock to open apps, and a menu bar with File, View, Window and Help menus. Window positions are remembered.
+- **Desktop.** Windows you can drag, resize, zoom and collapse (boxes at the right of the title bar) and close (box at the left). An icon strip at the bottom to open apps, and a menu bar with File, View, Window and Help menus. Window positions are remembered.
 - **Games window.** A Finder-style sidebar with Library (All Games, Favorites, Recently Played) and 10 categories (puzzle, arcade, action, racing, adventure, multiplayer, shooting, simulation, platform, sports), a search field, and sorting (A-Z, Z-A, category, most played). Clicking a game opens it fullscreen right away; press `Esc` to leave.
 - **Spotlight search.** Press `/` or `Ctrl`/`Cmd` + `K` to search games and apps from anywhere, or search the web in the Browser.
 - **Browser window.** Opens any website through a proxy (Ultraviolet or Scramjet) using a Wisp server. See [Browser setup](#browser-tab-setup).
-- **Options window.** Theme (light, dark, auto), wallpaper, accent color, reduce transparency, auto fullscreen, a backup file, and the disguise tools below.
+- **Options window.** Theme (light, dark, auto), wallpaper, accent color, auto fullscreen, a backup file, and the disguise tools below.
 - **Disguise tools.** Open the site inside an `about:blank` tab, set a custom tab title and icon (Google, Drive, Docs, Classroom, Canvas, Wikipedia, Khan Academy), and a panic key (default `` ` ``) that jumps to a page you choose.
 - **Open in about:blank.** The game player's **Tab** button opens the current game in an `about:blank` tab with your disguise applied.
 - **Works on phones.** Each window becomes a full-screen app and the dock stays at the bottom.
