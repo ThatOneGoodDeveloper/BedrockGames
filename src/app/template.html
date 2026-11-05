@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bedrock Games</title>
+  <meta name="bg-build" content="bgbuild={{BUILD}};" />
+  <meta name="description" content="Browser games you can play without installing anything.">
+  <link rel="icon" href="{{FAVICON}}">
+  <script>
+    window.bgApplyAccent = function (hex, theme) {
+      var s = document.documentElement.style;
+      var props = ['--hi', '--hi-2', '--btn-bg', '--on-hi', '--btn-ink'];
+      if (!/^#[0-9a-f]{6}$/i.test(hex || '')) { props.forEach(function (p) { s.removeProperty(p); }); return; }
+      var rgb = function (h) { return [1, 3, 5].map(function (i) { return parseInt(h.substr(i, 2), 16); }); };
+      var lum = function (c) {
+        var w = [0.2126, 0.7152, 0.0722];
+        return c.reduce(function (a, v, i) { v /= 255; return a + w[i] * (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)); }, 0);
+      };
+      var ratio = function (a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+      var mix = function (c, t, a) { return c.map(function (v, i) { return v + (t[i] - v) * a; }); };
+      var toHex = function (c) { return '#' + c.map(function (v) { return ('0' + Math.round(v).toString(16)).slice(-2); }).join(''); };
+      var c = rgb(hex), bg = rgb(theme === 'light' ? '#f2f2f7' : '#0b0b0f');
+      var ink = ratio(c, [0, 0, 0]) >= ratio(c, [255, 241, 232]) ? '#000000' : '#fff1e8';
+      var text = c, toward = theme === 'light' ? [0, 0, 0] : [255, 255, 255];
+      for (var a = 0; a <= 1 && ratio(text, bg) < 3.5; a += 0.05) text = mix(c, toward, a);
+      s.setProperty('--hi', hex);
+      s.setProperty('--btn-bg', hex);
+      s.setProperty('--on-hi', ink);
+      s.setProperty('--btn-ink', ink);
+      s.setProperty('--hi-2', toHex(text));
+    };
+    (function () {
+      try {
+        var r = document.documentElement, g = function (k, d) { var v = localStorage.getItem('bg-' + k); return v === null ? d : JSON.parse(v); };
+        var t = g('theme', 'system');
+        if (t === 'system') t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        r.setAttribute('data-theme', t);
+        if (g('solid', false)) r.classList.add('solid');
+        r.setAttribute('data-wall', g('wallpaper', 'horizon'));
+        window.bgApplyAccent(g('accent', ''), t);
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+{{CSS}}
+  </style>
+</head>
+<body>
+  <div class="wall" aria-hidden="true"></div>
+  <div class="wallclock" aria-hidden="true"><div class="wallclock__date" id="wcDate"></div><div class="wallclock__time" id="wcTime"></div></div>
+
+  <header class="mbar" id="mbar">
+    <div class="mbar__left">
+      <button class="mb-btn mb-logo" id="mbLogo" aria-haspopup="menu" aria-label="Bedrock menu">{{ICON:logo:17}}</button>
+      <strong class="mb-app" id="mbApp">Games</strong>
+      <button class="mb-btn mb-menu" data-menu="file">File</button>
+      <button class="mb-btn mb-menu" data-menu="view">View</button>
+      <button class="mb-btn mb-menu" data-menu="window">Window</button>
+      <button class="mb-btn mb-menu" data-menu="help">Help</button>
+    </div>
+    <div class="mbar__right">
+      <button class="mb-btn mb-icon" id="mbSearch" aria-label="Search" title="Search (/)">{{ICON:search:15}}</button>
+      <button class="mb-btn mb-icon" id="mbRandom" aria-label="Random game" title="Random game">{{ICON:dice:16}}</button>
+      <span class="mb-clock" id="mbClock"></span>
+    </div>
+  </header>
+  <div class="menu-pop" id="menuPop" role="menu" hidden=""></div>
+
+  <main class="desk" id="desk">
+    <section class="win" id="win-games" data-app="games" aria-label="Games" hidden="">
+      <header class="win__bar">
+        <div class="lights"><button class="light light--close" data-act="close" aria-label="Close"></button><button class="light light--min" data-act="min" aria-label="Minimize"></button><button class="light light--max" data-act="max" aria-label="Zoom"></button></div>
+        <h2 class="win__title">Games</h2>
+        <div class="win__tools"><label class="searchfield">{{ICON:search:14}}<input type="search" id="searchInput" placeholder="Search" autocomplete="off" aria-label="Search games" /></label></div>
+      </header>
+      <div class="win__body">
+        <div class="app app--games">
+          <aside class="side" id="gamesSide">
+            <p class="side__label">Library</p>
+            <button class="side__item side__item--active" data-cat="all" style="--c:#0a84ff"><span class="side__dot"></span><span class="side__name">All Games</span><span class="side__count" id="countAll"></span></button>
+            <button class="side__item" data-cat="@favorites" style="--c:#ff3b30"><span class="side__dot"></span><span class="side__name">Favorites</span><span class="side__count" id="favCount"></span></button>
+            <button class="side__item" data-cat="@recent" style="--c:#ff9f0a"><span class="side__dot"></span><span class="side__name">Recently Played</span><span class="side__count" id="playedCount"></span></button>
+            <p class="side__label">Categories</p>
+            <button class="side__item" data-cat="puzzle" style="--c:#5e5ce6"><span class="side__dot"></span><span class="side__name">Puzzle</span><span class="side__count" id="countPuzzle"></span></button>
+            <button class="side__item" data-cat="arcade" style="--c:#bf5af2"><span class="side__dot"></span><span class="side__name">Arcade</span><span class="side__count" id="countArcade"></span></button>
+            <button class="side__item" data-cat="action" style="--c:#ff9f0a"><span class="side__dot"></span><span class="side__name">Action</span><span class="side__count" id="countAction"></span></button>
+            <button class="side__item" data-cat="racing" style="--c:#ff453a"><span class="side__dot"></span><span class="side__name">Racing</span><span class="side__count" id="countRacing"></span></button>
+            <button class="side__item" data-cat="adventure" style="--c:#30b0c7"><span class="side__dot"></span><span class="side__name">Adventure</span><span class="side__count" id="countAdventure"></span></button>
+            <button class="side__item" data-cat="multiplayer" style="--c:#32ade6"><span class="side__dot"></span><span class="side__name">Multiplayer</span><span class="side__count" id="countMultiplayer"></span></button>
+            <button class="side__item" data-cat="shooting" style="--c:#ff375f"><span class="side__dot"></span><span class="side__name">Shooting</span><span class="side__count" id="countShooting"></span></button>
+            <button class="side__item" data-cat="simulation" style="--c:#34c759"><span class="side__dot"></span><span class="side__name">Simulation</span><span class="side__count" id="countSimulation"></span></button>
+            <button class="side__item" data-cat="platform" style="--c:#ac8e68"><span class="side__dot"></span><span class="side__name">Platform</span><span class="side__count" id="countPlatform"></span></button>
+            <button class="side__item" data-cat="sports" style="--c:#64d2ff"><span class="side__dot"></span><span class="side__name">Sports</span><span class="side__count" id="countSports"></span></button>
+          </aside>
+          <section class="content">
+            <div class="content__head">
+              <div>
+                <h3 class="content__title" id="gamesTitle">All Games</h3>
+                <p class="content__sub" id="gamesSubtitle"></p>
+              </div>
+              <label class="toolbar__field">Sort
+                <select id="sortSelect" class="settings-select" aria-label="Sort games">
+                  <option value="az">A - Z</option>
+                  <option value="za">Z - A</option>
+                  <option value="category">Category</option>
+                  <option value="played">Most played</option>
+                </select>
+              </label>
+            </div>
+            <div class="content__scroll" id="gamesScroll"><div class="games-grid" id="gamesGrid"></div></div>
+          </section>
+        </div>
+      </div>
+      <i class="grip grip--r"></i><i class="grip grip--b"></i><i class="grip grip--br"></i>
+    </section>
+    <section class="win" id="win-options" data-app="options" aria-label="Options" hidden="">
+      <header class="win__bar">
+        <div class="lights"><button class="light light--close" data-act="close" aria-label="Close"></button><button class="light light--min" data-act="min" aria-label="Minimize"></button><button class="light light--max" data-act="max" aria-label="Zoom"></button></div>
+        <h2 class="win__title">Options</h2>
+        <div class="win__tools"></div>
+      </header>
+      <div class="win__body">
+        <div class="app app--scroll app--options">
+          <div class="options">
+        <div class="settings-group">
+          <div class="settings-group__header"><h3>Display</h3></div>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <span class="settings-row__label">Theme</span>
+              <span class="settings-row__desc">Match your device, or pick light or dark.</span>
+            </div>
+            <div class="theme-switcher">
+              <button class="theme-opt" data-theme-val="light">Light</button>
+              <button class="theme-opt" data-theme-val="dark">Dark</button>
+              <button class="theme-opt" data-theme-val="system">Auto</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <span class="settings-row__label">Wallpaper</span>
+              <span class="settings-row__desc">The picture behind your windows</span>
+            </div>
+            <div class="wp-picker" id="wallPicker">
+              <button class="wp" data-wall="horizon" aria-pressed="true" aria-label="Horizon" title="Horizon"></button>
+              <button class="wp" data-wall="dusk" aria-pressed="false" aria-label="Dusk" title="Dusk"></button>
+              <button class="wp" data-wall="aurora" aria-pressed="false" aria-label="Aurora" title="Aurora"></button>
+              <button class="wp" data-wall="sand" aria-pressed="false" aria-label="Sand" title="Sand"></button>
+              <button class="wp" data-wall="graphite" aria-pressed="false" aria-label="Graphite" title="Graphite"></button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <span class="settings-row__label">Accent color</span>
+              <span class="settings-row__desc">Colors the active tab, buttons and highlights</span>
+            </div>
+            <div class="accent-picker" id="accentPicker">
+              <button class="swatch swatch--auto" data-accent="" aria-pressed="true" title="Theme default">Auto</button>
+              <button class="swatch" data-accent="#007aff" style="--sw:#007aff" aria-pressed="false" aria-label="Blue" title="Blue"></button>
+              <button class="swatch" data-accent="#af52de" style="--sw:#af52de" aria-pressed="false" aria-label="Purple" title="Purple"></button>
+              <button class="swatch" data-accent="#ff2d55" style="--sw:#ff2d55" aria-pressed="false" aria-label="Pink" title="Pink"></button>
+              <button class="swatch" data-accent="#ff3b30" style="--sw:#ff3b30" aria-pressed="false" aria-label="Red" title="Red"></button>
+              <button class="swatch" data-accent="#ff9500" style="--sw:#ff9500" aria-pressed="false" aria-label="Orange" title="Orange"></button>
+              <button class="swatch" data-accent="#ffcc00" style="--sw:#ffcc00" aria-pressed="false" aria-label="Yellow" title="Yellow"></button>
+              <button class="swatch" data-accent="#34c759" style="--sw:#34c759" aria-pressed="false" aria-label="Green" title="Green"></button>
+              <button class="swatch" data-accent="#8e8e93" style="--sw:#8e8e93" aria-pressed="false" aria-label="Graphite" title="Graphite"></button>
+              <input type="color" id="accentCustom" value="#007aff" aria-label="Pick a custom accent color" title="Custom color" />
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <span class="settings-row__label">Reduce transparency</span>
+              <span class="settings-row__desc">Use solid backgrounds instead of frosted glass</span>
+            </div>
+            <button class="toggle" id="solidToggle" role="switch" aria-checked="false" aria-label="Reduce transparency"><span class="toggle__slider"></span></button>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="settings-group__header"><h3>Gameplay</h3></div>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <span class="settings-row__label">Auto fullscreen</span>
+              <span class="settings-row__desc">Go fullscreen as soon as a game opens. Leaving fullscreen closes the game.</span>
+            </div>
+            <button class="toggle" id="autoFsToggle" role="switch" aria-checked="true" aria-label="Auto fullscreen"><span class="toggle__slider"></span></button>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="settings-group__header"><h3>Backup</h3></div>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <span class="settings-row__label">Save file</span>
+              <span class="settings-row__desc">Export favorites, history and options to a file, or load one back in.</span>
+            </div>
+            <div class="panic-key-row">
+              <button class="btn btn--sm" id="exportData">Export</button>
+              <button class="btn btn--sm" id="importBtn">Import</button>
+              <input type="file" id="importFile" accept="application/json,.json" hidden="" />
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="settings-group__header"><h3>Disguise</h3></div>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <span class="settings-row__label">Open in about:blank</span>
+              <span class="settings-row__desc">Reopens the site in an about:blank tab so the address is hidden</span>
+            </div>
+            <button class="toggle" id="cloakToggle" role="switch" aria-checked="false" aria-label="Open in about:blank"><span class="toggle__slider"></span></button>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <span class="settings-row__label">Tab title</span>
+              <span class="settings-row__desc">Text shown on the browser tab</span>
+            </div>
+            <input type="text" class="settings-input" id="tabTitleInput" placeholder="Google Docs" />
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <span class="settings-row__label">Tab icon</span>
+              <span class="settings-row__desc">Favicon shown on the tab</span>
+            </div>
+            <select class="settings-select" id="tabIconSelect">
+              <option value="">Default</option>
+              <option value="google">Google</option>
+              <option value="drive">Google Drive</option>
+              <option value="docs">Google Docs</option>
+              <option value="classroom">Google Classroom</option>
+              <option value="canvas">Canvas LMS</option>
+              <option value="wikipedia">Wikipedia</option>
+              <option value="khan">Khan Academy</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <span class="settings-row__label">Panic key</span>
+              <span class="settings-row__desc">Press it anywhere to jump to the panic page</span>
+            </div>
+            <div class="panic-key-row">
+              <kbd class="kbd" id="panicKeyDisplay">`</kbd>
+              <button class="btn btn--sm" id="setPanicKey">Change</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <span class="settings-row__label">Panic page</span>
+              <span class="settings-row__desc">Where the panic key takes you</span>
+            </div>
+            <input type="text" class="settings-input" id="panicUrlInput" placeholder="https://classroom.google.com" />
+          </div>
+          <div class="settings-row settings-row--center">
+            <button class="btn btn--primary btn--full" id="launchBlank">Open in about:blank now</button>
+          </div>
+          <p class="settings-hint">Your browser may ask you to allow pop-ups first.</p>
+        </div>
+
+        <div class="settings-group">
+          <div class="settings-group__header"><h3>Save data</h3></div>
+          <div class="settings-row">
+            <div class="settings-row__info"><span class="settings-row__label">Favorites</span></div>
+            <button class="btn btn--sm" id="clearFavorites">Clear</button>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info"><span class="settings-row__label">Recently played</span></div>
+            <button class="btn btn--sm" id="clearHistory">Clear</button>
+          </div>
+          <div class="settings-row settings-row--center">
+            <button class="btn btn--sm btn--danger" id="resetSettings">Reset everything</button>
+          </div>
+        </div>
+          </div>
+        </div>
+      </div>
+      <i class="grip grip--r"></i><i class="grip grip--b"></i><i class="grip grip--br"></i>
+    </section>
+    <section class="win" id="win-help" data-app="help" aria-label="Help" hidden="">
+      <header class="win__bar">
+        <div class="lights"><button class="light light--close" data-act="close" aria-label="Close"></button><button class="light light--min" data-act="min" aria-label="Minimize"></button><button class="light light--max" data-act="max" aria-label="Zoom"></button></div>
+        <h2 class="win__title">Help</h2>
+        <div class="win__tools"></div>
+      </header>
+      <div class="win__body">
+        <div class="app app--scroll">
+          <dl class="help">
+            <div class="help__row"><dt>Open a game</dt><dd>Click it in the Games window. It opens fullscreen right away; press <kbd class="kbd">Esc</kbd> to leave.</dd></div>
+            <div class="help__row"><dt>Save</dt><dd>Adds the game to Favorites. Your latest games appear under Recently Played.</dd></div>
+            <div class="help__row"><dt><kbd class="kbd">/</kbd> or <kbd class="kbd">Ctrl</kbd> <kbd class="kbd">K</kbd></dt><dd>Searches games and apps from anywhere.</dd></div>
+            <div class="help__row"><dt><kbd class="kbd">1</kbd> <kbd class="kbd">2</kbd></dt><dd>Opens Games and Options.</dd></div>
+            <div class="help__row"><dt>Dock</dt><dd>Click an app to open it. The dice opens a random game.</dd></div>
+            <div class="help__row"><dt>Windows</dt><dd>Drag the title bar to move, drag an edge to resize. Red closes, yellow minimizes to the dock, green zooms.</dd></div>
+            <div class="help__row"><dt>Panic key <kbd class="kbd" id="helpPanicKey">`</kbd></dt><dd>Jumps to the panic page. Change both in Options.</dd></div>
+            <div class="help__row"><dt>Options</dt><dd>Theme, wallpaper, accent color, about:blank, tab title and icon, auto fullscreen, and a backup file.</dd></div>
+          </dl>
+        </div>
+      </div>
+      <i class="grip grip--r"></i><i class="grip grip--b"></i><i class="grip grip--br"></i>
+    </section>
+    <section class="win win--fixed" id="win-about" data-app="about" aria-label="About Bedrock Games" hidden="">
+      <header class="win__bar">
+        <div class="lights"><button class="light light--close" data-act="close" aria-label="Close"></button><button class="light light--min" data-act="min" aria-label="Minimize"></button><button class="light light--max" data-act="max" aria-label="Zoom"></button></div>
+        <h2 class="win__title">About Bedrock Games</h2>
+        <div class="win__tools"></div>
+      </header>
+      <div class="win__body">
+        <div class="app app--about">
+          <span class="about__icon">{{ICON:logo:92}}</span>
+          <h3 class="about__name">Bedrock Games</h3>
+          <p class="about__line">Build <span id="aboutBuild">{{BUILD}}</span></p>
+          <p class="about__desc">806 browser games, in one desktop.</p>
+          <button class="btn btn--sm" id="aboutReload">Reload</button>
+        </div>
+      </div>
+      <i class="grip grip--r"></i><i class="grip grip--b"></i><i class="grip grip--br"></i>
+    </section>
+  </main>
+
+  <nav class="dock" id="dock" aria-label="Dock">
+    <div class="dock__inner" id="dockInner">
+      <button class="dock-item" data-app="games" aria-label="Games"><span class="dock-icon">{{ICON:app-games:54}}</span><span class="dock-tip">Games</span><i class="dock-dot"></i></button>
+      <button class="dock-item" data-app="options" aria-label="Options"><span class="dock-icon">{{ICON:app-options:54}}</span><span class="dock-tip">Options</span><i class="dock-dot"></i></button>
+      <span class="dock-sep"></span>
+      <button class="dock-item" id="dockRandom" aria-label="Random game"><span class="dock-icon">{{ICON:app-random:54}}</span><span class="dock-tip">Random game</span></button>
+    </div>
+  </nav>
+
+  <div class="spot" id="spot" hidden="">
+    <div class="spot__panel" role="dialog" aria-label="Search">
+      <div class="spot__field">{{ICON:search:22}}<input type="text" id="spotInput" placeholder="Search games and apps" autocomplete="off" spellcheck="false" aria-label="Search games and apps" /></div>
+      <ul class="spot__list" id="spotList" role="listbox"></ul>
+    </div>
+  </div>
+
+  <div class="game-player" id="gamePlayer">
+    <div class="game-player__bar">
+      <div class="game-player__info">
+        <button class="game-player__btn" id="gamePlayerBack" aria-label="Close game">&#8249; Back</button>
+        <span class="game-player__title" id="gamePlayerTitle">Game</span>
+      </div>
+      <div class="game-player__actions">
+        <button class="game-player__btn" id="gamePlayerFav" aria-label="Toggle favorite">Save</button>
+        <button class="game-player__btn" id="gamePlayerFullscreen" aria-label="Fullscreen">Full</button>
+        <button class="game-player__btn" id="gamePlayerNewTab" aria-label="Open in an about:blank tab" title="Open in an about:blank tab">Tab</button>
+      </div>
+    </div>
+    <iframe class="game-player__frame" id="gamePlayerFrame" title="Game" allow="fullscreen; autoplay; gamepad; pointer-lock; clipboard-write; accelerometer; gyroscope" allowfullscreen="" referrerpolicy="no-referrer-when-downgrade"></iframe>
+  </div>
+
+  <script>
+{{DATA}}
+{{JS}}
+  </script>
+</body>
+</html>
