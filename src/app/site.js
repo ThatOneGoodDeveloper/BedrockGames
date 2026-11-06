@@ -346,13 +346,14 @@
     saveWins(); syncDock();
     if (id === 'options') syncSettingsUI();
     if (id === 'help') showPanicKey();
+    if (APPS[id].ext) loadExt(id);
   }
   function closeApp(id) {
     const el = wins[id], st = winState[id];
     if (!el || el.hidden || !st) return;
     st.open = false; st.min = false;
     el.classList.add('win--closing');
-    setTimeout(() => { if (!st.open) { el.hidden = true; } el.classList.remove('win--closing'); }, 170);
+    setTimeout(() => { if (!st.open) { el.hidden = true; if (APPS[id].ext) unloadExt(id); } el.classList.remove('win--closing'); }, 170);
     if (front === id) focusTopmost(id);
     saveWins(); syncDock();
   }
@@ -440,6 +441,66 @@
       g.addEventListener('pointercancel', up);
     }));
   }
+  // ─── Apps that show a web page in an iframe ───
+  // Each gets a window, a dock icon, a Window menu entry and a Spotlight entry. The page loads when the
+  // window opens and unloads when it closes. The icon is the page's favicon; if it cannot load, a colored
+  // tile with the first letter is shown.
+  const EXT_APPS = [
+    { id: 'duckmath', title: 'Duck Math', url: 'https://prime-yamal.s3.us-east-2.amazonaws.com/duckmath_1.htm', icon: 'https://prime-yamal.s3.us-east-2.amazonaws.com/imgs/duck.webp', color: '#e8a400' },
+    { id: 'google', title: 'Google', url: 'https://prime-yamal.s3.us-east-2.amazonaws.com/google.html', icon: 'https://www.google.com/favicon.ico', color: '#4285f4' },
+    { id: 'storm', title: 'Storm 0S', url: 'https://prime-yamal.s3.us-east-2.amazonaws.com/storm-auto-loader+2.html', icon: '', color: '#6b4df0' },
+    { id: 'unblockedzone', title: 'Unblocked Zone', url: 'https://prime-yamal.s3.us-east-2.amazonaws.com/unblockedzone.html', icon: '', color: '#1f9d8f' },
+  ];
+  const extById = id => EXT_APPS.find(a => a.id === id);
+  function extIcon(app, size) {
+    const t = document.createElement('span');
+    t.className = 'app-ico';
+    t.style.cssText = '--c:' + app.color + ';width:' + size + 'px;height:' + size + 'px;font-size:' + Math.round(size * 0.46) + 'px';
+    const letter = () => { t.className = 'app-ico app-ico--letter'; t.textContent = app.title.charAt(0).toUpperCase(); };
+    if (!app.icon) { letter(); return t; }
+    t.classList.add('app-ico--img');
+    const img = document.createElement('img');
+    img.alt = ''; img.referrerPolicy = 'no-referrer';
+    img.onerror = () => { t.textContent = ''; letter(); };
+    img.src = app.icon;
+    t.appendChild(img);
+    return t;
+  }
+  const extFrames = {};
+  EXT_APPS.forEach(app => {
+    APPS[app.id] = { title: app.title, w: 1040, h: 700, minW: 420, minH: 320, ext: true };
+    const el = document.createElement('section');
+    el.className = 'win'; el.id = 'win-' + app.id; el.dataset.app = app.id; el.hidden = true;
+    el.setAttribute('aria-label', app.title);
+    el.innerHTML =
+      '<header class="win__bar"><div class="lights"><button class="light light--close" data-act="close" aria-label="Close"></button>' +
+      '<button class="light light--min" data-act="min" aria-label="Minimize"></button><button class="light light--max" data-act="max" aria-label="Zoom"></button></div>' +
+      '<h2 class="win__title"></h2><div class="win__tools"><button class="mini" data-reload="1" type="button">Reload</button></div></header>' +
+      '<div class="win__body"><iframe class="ext-frame" title="" allow="fullscreen; autoplay; clipboard-write; gamepad; pointer-lock; microphone; camera" allowfullscreen="allowfullscreen"></iframe></div>' +
+      '<i class="grip grip--r"></i><i class="grip grip--b"></i><i class="grip grip--br"></i>';
+    $('.win__title', el).textContent = app.title;
+    const frame = $('.ext-frame', el);
+    frame.title = app.title;
+    extFrames[app.id] = frame;
+    $('[data-reload]', el).addEventListener('click', () => { frame.src = 'about:blank'; setTimeout(() => { frame.src = app.url; }, 30); });
+    $('#desk').appendChild(el);
+    const item = document.createElement('button');
+    item.className = 'dock-item'; item.dataset.app = app.id; item.setAttribute('aria-label', app.title);
+    const ico = document.createElement('span'); ico.className = 'dock-icon'; ico.appendChild(extIcon(app, 54));
+    const tip = document.createElement('span'); tip.className = 'dock-tip'; tip.textContent = app.title;
+    const dot = document.createElement('i'); dot.className = 'dock-dot';
+    item.append(ico, tip, dot);
+    const dockInnerEl = $('#dockInner');
+    dockInnerEl.insertBefore(item, $('.dock-sep', dockInnerEl));
+  });
+  const loadExt = id => { const f = extFrames[id]; if (f && !f.getAttribute('src')) f.src = extById(id).url; };
+  const unloadExt = id => { const f = extFrames[id]; if (f) f.removeAttribute('src'); };
+  // A click inside an iframe never reaches this page, so bring its window to the front when the frame takes focus.
+  window.addEventListener('blur', () => setTimeout(() => {
+    const a = document.activeElement;
+    if (a && a.classList && a.classList.contains('ext-frame')) { const w = a.closest('.win'); if (w && front !== w.dataset.app) focusApp(w.dataset.app); }
+  }, 0));
+
   $$('.win').forEach(setupWindow);
   window.addEventListener('resize', () => Object.keys(wins).forEach(id => { if (!wins[id].hidden) applyGeom(id); }));
 
@@ -486,6 +547,7 @@
     ],
     window: () => [
       appItem('games', 'Games', '1'), appItem('options', 'Options', '2'), appItem('help', 'Help', '?'), 'sep',
+      ...EXT_APPS.map(a => appItem(a.id, a.title)), 'sep',
       { label: 'Minimize', disabled: !front || isMobile(), action: () => front && minimizeApp(front) },
       { label: 'Zoom', disabled: !front || isMobile() || APPS[front].fixed, action: () => front && zoomApp(front) },
     ],
@@ -542,7 +604,7 @@
   // ─── Desktop: Spotlight search ───
   const spot = $('#spot'), spotInput = $('#spotInput'), spotList = $('#spotList');
   let spotRows = [], spotIndex = 0;
-  const SPOT_APPS = [['games', 'Games'], ['options', 'Options'], ['help', 'Help'], ['about', 'About Bedrock Games']];
+  const SPOT_APPS = [['games', 'Games'], ['options', 'Options'], ['help', 'Help'], ['about', 'About Bedrock Games']].concat(EXT_APPS.map(a => [a.id, a.title]));
 
   function openSpot(prefill) {
     closeMenu();
@@ -558,6 +620,7 @@
     const icon = document.createElement('span');
     icon.className = 'spot__icon';
     if (row.game) icon.innerHTML = row.game.img ? '<img alt="" src="' + esc(row.game.img) + '">' : '';
+    else if (extById(row.app)) icon.appendChild(extIcon(extById(row.app), 40));
     else icon.innerHTML = '<span class="px">' + APP_ICONS[row.app || 'games'] + '</span>';
     const name = document.createElement('span'); name.className = 'spot__name'; name.textContent = row.label;
     const kind = document.createElement('span'); kind.className = 'spot__kind'; kind.textContent = row.kind;
@@ -1000,7 +1063,7 @@
     const fromHash = (location.hash.match(/^#\/(\w+)/) || [])[1];
     const wanted = APPS[fromHash] && fromHash !== 'games' ? fromHash : null;
     if (isMobile()) { openApp(wanted || 'games'); return; }
-    const restored = ['games', 'options', 'help'].filter(id => winState[id] && winState[id].open && id !== wanted);
+    const restored = ['games', 'options', 'help'].concat(EXT_APPS.map(a => a.id)).filter(id => winState[id] && winState[id].open && id !== wanted);
     const list = restored.length || wanted ? restored : ['games'];
     list.forEach(id => openApp(id));
     if (wanted) openApp(wanted);
