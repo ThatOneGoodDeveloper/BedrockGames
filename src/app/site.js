@@ -443,29 +443,14 @@
   }
   // ─── Apps that show a web page in an iframe ───
   // Each gets a window, a dock icon, a Window menu entry and a Spotlight entry. The page loads when the
-  // window opens and unloads when it closes. The icon is the page's favicon; if it cannot load, a colored
-  // tile with the first letter is shown.
+  // window opens and unloads when it closes. They have no icons: the dock shows the name as text.
   const EXT_APPS = [
-    { id: 'duckmath', title: 'Duck Math', url: 'https://prime-yamal.s3.us-east-2.amazonaws.com/duckmath_1.htm', icon: 'https://prime-yamal.s3.us-east-2.amazonaws.com/imgs/duck.webp', color: '#e8a400' },
-    { id: 'google', title: 'Google', url: 'https://prime-yamal.s3.us-east-2.amazonaws.com/google.html', icon: 'https://www.google.com/favicon.ico', color: '#4285f4' },
-    { id: 'storm', title: 'Storm 0S', url: 'https://prime-yamal.s3.us-east-2.amazonaws.com/storm-auto-loader+2.html', icon: '', color: '#6b4df0' },
-    { id: 'unblockedzone', title: 'Unblocked Zone', url: 'https://prime-yamal.s3.us-east-2.amazonaws.com/unblockedzone.html', icon: '', color: '#1f9d8f' },
+    { id: 'duckmath', title: 'Duck Math', url: 'https://prime-yamal.s3.us-east-2.amazonaws.com/duckmath_1.htm' },
+    { id: 'google', title: 'Google', url: 'https://prime-yamal.s3.us-east-2.amazonaws.com/google.html' },
+    { id: 'storm', title: 'Storm 0S', url: 'https://prime-yamal.s3.us-east-2.amazonaws.com/storm-auto-loader+2.html' },
+    { id: 'unblockedzone', title: 'Unblocked Zone', url: 'https://prime-yamal.s3.us-east-2.amazonaws.com/unblockedzone.html' },
   ];
   const extById = id => EXT_APPS.find(a => a.id === id);
-  function extIcon(app, size) {
-    const t = document.createElement('span');
-    t.className = 'app-ico';
-    t.style.cssText = '--c:' + app.color + ';width:' + size + 'px;height:' + size + 'px;font-size:' + Math.round(size * 0.46) + 'px';
-    const letter = () => { t.className = 'app-ico app-ico--letter'; t.textContent = app.title.charAt(0).toUpperCase(); };
-    if (!app.icon) { letter(); return t; }
-    t.classList.add('app-ico--img');
-    const img = document.createElement('img');
-    img.alt = ''; img.referrerPolicy = 'no-referrer';
-    img.onerror = () => { t.textContent = ''; letter(); };
-    img.src = app.icon;
-    t.appendChild(img);
-    return t;
-  }
   const extFrames = {};
   EXT_APPS.forEach(app => {
     APPS[app.id] = { title: app.title, w: 1040, h: 700, minW: 420, minH: 320, ext: true };
@@ -485,11 +470,10 @@
     $('[data-reload]', el).addEventListener('click', () => { frame.src = 'about:blank'; setTimeout(() => { frame.src = app.url; }, 30); });
     $('#desk').appendChild(el);
     const item = document.createElement('button');
-    item.className = 'dock-item'; item.dataset.app = app.id; item.setAttribute('aria-label', app.title);
-    const ico = document.createElement('span'); ico.className = 'dock-icon'; ico.appendChild(extIcon(app, 54));
-    const tip = document.createElement('span'); tip.className = 'dock-tip'; tip.textContent = app.title;
+    item.className = 'dock-item dock-item--text'; item.dataset.app = app.id; item.setAttribute('aria-label', app.title);
+    const label = document.createElement('span'); label.className = 'dock-label'; label.textContent = app.title;
     const dot = document.createElement('i'); dot.className = 'dock-dot';
-    item.append(ico, tip, dot);
+    item.append(label, dot);
     const dockInnerEl = $('#dockInner');
     dockInnerEl.insertBefore(item, $('.dock-sep', dockInnerEl));
   });
@@ -620,7 +604,7 @@
     const icon = document.createElement('span');
     icon.className = 'spot__icon';
     if (row.game) icon.innerHTML = row.game.img ? '<img alt="" src="' + esc(row.game.img) + '">' : '';
-    else if (extById(row.app)) icon.appendChild(extIcon(extById(row.app), 40));
+    else if (extById(row.app)) icon.classList.add('spot__icon--none');
     else icon.innerHTML = '<span class="px">' + APP_ICONS[row.app || 'games'] + '</span>';
     const name = document.createElement('span'); name.className = 'spot__name'; name.textContent = row.label;
     const kind = document.createElement('span'); kind.className = 'spot__kind'; kind.textContent = row.kind;
